@@ -28,10 +28,25 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
+	float position = video.getPosition();
+
 	switch (key) {
-	case 'p':
+	case 'k':
 		is_paused = !is_paused;
 		video.setPaused(is_paused);
+		break;
+	case ' ':
+		is_paused = !is_paused;
+		video.setPaused(is_paused);
+		break;
+	case 'l':
+		position = (position + 0.01 > 1) ? 1 : position + 0.02; //will cap position to 1
+		video.setPosition(position);
+		break;
+	case 'j':
+		position = (position - 0.01 < 0) ? 0 : position - 0.02; //will floor position at 0
+		video.setPosition(position);
+		break;
 	default:
 		break;
 	}
@@ -54,7 +69,8 @@ void ofApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-
+	is_paused = !is_paused;
+	video.setPaused(is_paused);
 }
 
 //--------------------------------------------------------------
