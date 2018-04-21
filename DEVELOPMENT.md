@@ -15,3 +15,7 @@ After these steps, the video player now loads and is able to load and play the [
 When running the program through the x86 debug or x64 debug from Visual Studio, the video would lag and the frame rate would be slightly unnatural; using a newly built release version (rather than debug) as suggested on the openFrameworks forum, considerably speeds up performance and eliminates the lag.
 
 In addition, also added preliminary playback controls like the pause/play control, which can be toggled using the 'p' button on the keyboard.
+
+#### (4/22) Added Additional Playback Controls
+
+Simply added new controls to toggle pause function on keys 'k' and 'spacebar' and on mouse-click, removing the option for the 'p' button.  In addition, similar to YouTube, the 'j' button allows the user to seek backwards by a set interval (2% of the video's length) and the 'l' button allows the user to seek forward by that same amount.
