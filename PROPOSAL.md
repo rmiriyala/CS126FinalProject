@@ -15,5 +15,7 @@ OpenFrameworks has many tutorials on loading and playing videos, such as [this o
 #### File Hosting
 In order for this app to function, it will need access to a collection of movies and/or tv episodes.  To do this, I plan on using previously stored videos on local storage, or if possible, streaming from some exterior site, though libraries for this task are sparse.
 
-### *Amendment*
+## *Amendment*
+
+#### Speech Recognition
 In order to add further complexity to this assignment, I have decided to add a speech recognition component using the library [Voce](http://voce.sourceforge.net/) and will use the speech recognition to either have the user be able to voice-control media playback or to search for titles amongst the collection that the app offers.
