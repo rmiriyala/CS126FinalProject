@@ -3,11 +3,12 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 	ofBackground(255, 255, 255);
-	ofSetVerticalSync(true);
+	ofSetVerticalSync(false);
 
-	video.load("movies/Pats_Broncos_2013.mov");
-	// video.setLoopState(OF_LOOP_NORMAL);
+	video.load("movies/Vince_Wilfork_Highlights.mp4");
 	video.play();
+
+	is_paused = false;
 }
 
 //--------------------------------------------------------------
@@ -27,7 +28,13 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-
+	switch (key) {
+	case 'p':
+		is_paused = !is_paused;
+		video.setPaused(is_paused);
+	default:
+		break;
+	}
 }
 
 //--------------------------------------------------------------
