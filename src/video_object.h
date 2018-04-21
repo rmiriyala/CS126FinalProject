@@ -11,5 +11,5 @@ public:
     bool isWatched();
     void setWatched(bool watched);
 
-    void initializeThumbnail();
+    void initializeThumbnails();
 };
