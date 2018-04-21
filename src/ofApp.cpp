@@ -5,7 +5,7 @@ void ofApp::setup(){
 	ofBackground(255, 255, 255);
 	ofSetVerticalSync(false);
 
-	video.load("movies/Vince_Wilfork_Highlights.mp4");
+	video.load("movies/Pats_Broncos_2013.mov");
 	video.play();
 
 	is_paused = false;
@@ -32,12 +32,10 @@ void ofApp::keyPressed(int key){
 
 	switch (key) {
 	case 'k':
-		is_paused = !is_paused;
-		video.setPaused(is_paused);
+		TogglePause();
 		break;
 	case ' ':
-		is_paused = !is_paused;
-		video.setPaused(is_paused);
+		TogglePause();
 		break;
 	case 'l':
 		position = (position + 0.01 > 1) ? 1 : position + 0.02; //will cap position to 1
@@ -69,8 +67,7 @@ void ofApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-	is_paused = !is_paused;
-	video.setPaused(is_paused);
+	TogglePause();
 }
 
 //--------------------------------------------------------------
@@ -101,4 +98,9 @@ void ofApp::gotMessage(ofMessage msg){
 //--------------------------------------------------------------
 void ofApp::dragEvent(ofDragInfo dragInfo){ 
 
+}
+
+void ofApp::TogglePause() {
+	is_paused = !is_paused;
+	video.setPaused(is_paused);
 }

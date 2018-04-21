@@ -23,4 +23,6 @@ class ofApp : public ofBaseApp{
 		
 		ofVideoPlayer video;
 		bool is_paused;
+
+		void TogglePause();
 };
