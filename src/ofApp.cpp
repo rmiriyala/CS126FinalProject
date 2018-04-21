@@ -2,17 +2,27 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+	ofBackground(255, 255, 255);
+	ofSetVerticalSync(true);
 
+	video.load("movies/Pats_Broncos_2013.mov");
+	// video.setLoopState(OF_LOOP_NORMAL);
+	video.play();
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-
+	video.update();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-
+	// ofSetHexColor(0xFFFFFF);
+	int video_width = ofGetWidth();
+	int video_height = ofGetHeight();
+	int x_position = 0;
+	int y_position = 0;
+	video.draw(x_position, y_position, video_width, video_height);
 }
 
 //--------------------------------------------------------------
