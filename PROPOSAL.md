@@ -21,6 +21,6 @@ In order for this app to function, it will need access to a collection of movies
 
 Now, using pre-collected data from 10 "users" (will gather data through a survey), I will build 10 unique user profiles.  Then, using all current likes and dislikes from the current user's profile, the program will recommend what he/she is most likely to enjoy watching next as a result of their previous likes. It will do this by fitting the user to each of the compiled user-profiles (with percentages, e.g. 50% match with User 1, 25% User 2, 25% User 3) and matching their opinions of each unwatched movie to the current user (e.g. if Users 1 and 2 like Movie X, and User 3 does not, (((.50)(1) + (.25)(1) + (.25)(0)) / 1) = 75% chance of liking the show).  The program will scan each of these probabilities and return the one with the highest chance of the user liking it.
 
-*Login System*
+##### *Login System (if time-permitting)*
 
 If possible, I would extend this functionality to allow the creation of different users of the program, each with their own user-profile, and with custom recommendations based on the other n-1 users preferences using the same logic as the standard recommendation system; in theory, this would result in infinite scalability and a more accurate recommmendation than that of one using just 10 base users.
