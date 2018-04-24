@@ -15,7 +15,8 @@ OpenFrameworks has many tutorials on loading and playing videos, such as [this o
 #### File Hosting
 In order for this app to function, it will need access to a collection of movies and/or tv episodes.  To do this, I plan on using previously stored videos on local storage, or if possible, streaming from some exterior site, though libraries for this task are sparse.
 
-## *Amendment*
+## *Amendment II*
 
-#### Speech Recognition
-In order to add further complexity to this assignment, I have decided to add a speech recognition component using the library [Voce](http://voce.sourceforge.net/) and will use the speech recognition to either have the user be able to voice-control media playback or to search for titles amongst the collection that the app offers.
+#### Recommendation System
+
+Now, using pre-collected data from 10 "users" (will gather data through a survey), I will build 10 unique user profiles.  Then, using all current likes and dislikes from the current user's profile, the program will recommend what he/she is most likely to enjoy watching next as a result of their previous likes. It will do this by fitting the user to each of the compiled user-profiles (with percentages, e.g. 50% match with User 1, 25% User 2, 25% User 3) and matching their opinions of each unwatched movie to the current user (e.g. if Users 1 and 2 like Movie X, and User 3 does not, (((.50)(1) + (.25)(1) + (.25)(0)) / 1) = 75% chance of liking the show).  The program will scan each of these probabilities and return the one with the highest chance of the user liking it.
