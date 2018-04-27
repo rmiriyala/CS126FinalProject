@@ -14,7 +14,6 @@ class ofApp : public ofBaseApp{
 		ofVideoPlayer video_;
 
 		bool is_paused_;
-		double click_on_slider_;
 
 	public:
 		void setup();

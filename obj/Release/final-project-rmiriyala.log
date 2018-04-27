@@ -1,4 +1,6 @@
 ﻿  ofApp.cpp
+  main.cpp
+  Unknown compiler version - please run the configure tests and report the results
   Unknown compiler version - please run the configure tests and report the results
      Creating library bin\final-project-rmiriyala.lib and object bin\final-project-rmiriyala.exp
   LINK : /LTCG specified but no code generation required; remove /LTCG from the link command line to improve linker performance

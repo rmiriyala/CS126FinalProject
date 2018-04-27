@@ -6,7 +6,7 @@ void ofApp::setup(){
 	ofSetVerticalSync(true);
 
 	gui_ = new ofxDatGui(ofxDatGuiAnchor::BOTTOM_LEFT);
-	playback_scrubber_ = gui_->addSlider("", 0, 1);
+	playback_scrubber_ = gui_->addSlider("Playback Slider", 0, 1);
 	playback_scrubber_->setWidth(3000, 0);
 	playback_scrubber_->setValue(0);
 
@@ -26,7 +26,7 @@ void ofApp::update(){
 void ofApp::draw(){
 	// ofSetHexColor(0xFFFFFF);
 	int video_width = ofGetWidth();
-	int video_height = ofGetHeight();
+	int video_height = ofGetHeight() - playback_scrubber_->getHeight();
 	int x_position = 0;
 	int y_position = 0;
 	video_.draw(x_position, y_position, video_width, video_height);
@@ -75,18 +75,18 @@ void ofApp::mouseDragged(int x, int y, int button){
 }
 
 //--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button){
-	/*if (click_on_slider_ - video_.getPosition() > 0.01 || click_on_slider_ - video_.getPosition() < 0.01) {
-		video_.setPosition(click_on_slider_);
+void ofApp::mousePressed(int x, int y, int button) {
+	//will prevent mouse clicks not on slider from triggering pause
+	if (y >= ofGetHeight() - playback_scrubber_->getHeight()) {
+		playback_scrubber_->onSliderEvent(this, &ofApp::onSliderEvent);
 	} else {
 		TogglePause();
-	}*/
+	}
 }
 
-void ofApp::onSliderEvent(ofxDatGuiSliderEvent e)
-{
-	click_on_slider_ = e.value;
-	cout << "the new value of the slider = " << e.value << endl;
+void ofApp::onSliderEvent(ofxDatGuiSliderEvent e) {
+	video_.setPosition(e.value);
+	//cout << "the new value of the slider = " << e.value << endl;
 	//cout << "the new scale of the slider = " << e.scale << endl;
 }
 
