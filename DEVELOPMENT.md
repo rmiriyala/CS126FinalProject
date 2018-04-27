@@ -19,3 +19,11 @@ In addition, also added preliminary playback controls like the pause/play contro
 #### (4/22) Added Additional Playback Controls
 
 Simply added new controls to toggle pause function on keys 'k' and 'spacebar' and on mouse-click, removing the option for the 'p' button.  In addition, similar to YouTube, the 'j' button allows the user to seek backwards by a set interval (2% of the video's length) and the 'l' button allows the user to seek forward by that same amount.
+
+#### (4/27) Added ofDatGUI Library
+
+Downloaded and added ofDatGUI library to the project using ProjectGenerator and including a header in ofApp.h.  Will implement a video scrubbing bar with their slider GUI interface.
+
+#### (4/27) Added Video Scrubber
+
+Created video scrubber with the ofDatGUI library's slider tool; set the code up in a way that allows the playback slider to be updated by any change in the video's playback position including the jump-position 'j' and 'k' keys.  Also avoids the issue of toggling pause, which used to be the standard mouse-click action.
