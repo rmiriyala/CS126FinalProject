@@ -13,6 +13,7 @@ class ofApp : public ofBaseApp{
 		VideoObject media_;
 		ofVideoPlayer video_;
 
+		std::size_t last_mouse_usage_;
 		bool is_paused_;
 
 	public:

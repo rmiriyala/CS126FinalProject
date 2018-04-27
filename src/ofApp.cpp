@@ -7,7 +7,7 @@ void ofApp::setup(){
 
 	gui_ = new ofxDatGui(ofxDatGuiAnchor::BOTTOM_LEFT);
 	playback_scrubber_ = gui_->addSlider("Playback Slider", 0, 1);
-	playback_scrubber_->setWidth(3000, 0);
+	playback_scrubber_->setWidth(ofGetWidth(), 0);
 	playback_scrubber_->setValue(0);
 
 	video_.load("movies/Pats_Broncos_2013.mov");
@@ -18,6 +18,10 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+	if (ofGetElapsedTimeMillis() - last_mouse_usage_ > 3000) {
+		ofHideCursor();
+	}
+
 	video_.update();
 	playback_scrubber_->setValue(video_.getPosition());
 }
@@ -66,7 +70,8 @@ void ofApp::keyReleased(int key){
 
 //--------------------------------------------------------------
 void ofApp::mouseMoved(int x, int y ){
-
+	last_mouse_usage_ = ofGetElapsedTimeMillis();
+	ofShowCursor();
 }
 
 //--------------------------------------------------------------
@@ -86,8 +91,7 @@ void ofApp::mousePressed(int x, int y, int button) {
 
 void ofApp::onSliderEvent(ofxDatGuiSliderEvent e) {
 	video_.setPosition(e.value);
-	//cout << "the new value of the slider = " << e.value << endl;
-	//cout << "the new scale of the slider = " << e.scale << endl;
+	//cout << "slider = " << e.value << endl; //debug statement
 }
 
 //--------------------------------------------------------------
@@ -107,7 +111,7 @@ void ofApp::mouseExited(int x, int y){
 
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
-
+	playback_scrubber_->setWidth(ofGetWidth(), 0);
 }
 
 //--------------------------------------------------------------
