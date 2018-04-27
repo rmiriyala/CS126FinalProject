@@ -1,4 +1,6 @@
 #include <string>
+#include "ofMain.h"
+#include "ofxDatGui.h"
 
 class VideoObject {
 private:

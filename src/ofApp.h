@@ -1,8 +1,20 @@
 #pragma once
 
 #include "ofMain.h"
+#include "ofxDatGui.h"
+#include "video_object.h"
+#include <string>
 
 class ofApp : public ofBaseApp{
+	private:
+		ofxDatGui * gui_;
+		ofxDatGuiSlider* playback_scrubber_;
+
+		VideoObject media_;
+		ofVideoPlayer video_;
+
+		bool is_paused_;
+		double click_on_slider_;
 
 	public:
 		void setup();
@@ -14,6 +26,7 @@ class ofApp : public ofBaseApp{
 		void mouseMoved(int x, int y );
 		void mouseDragged(int x, int y, int button);
 		void mousePressed(int x, int y, int button);
+		void onSliderEvent(ofxDatGuiSliderEvent e);
 		void mouseReleased(int x, int y, int button);
 		void mouseEntered(int x, int y);
 		void mouseExited(int x, int y);
@@ -21,8 +34,6 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 		
-		ofVideoPlayer video;
-		bool is_paused;
 
-		void TogglePause();
+		void TogglePause(); //toggles the pause/play functionality in video
 };
