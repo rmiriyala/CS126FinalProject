@@ -95,11 +95,23 @@ void ofApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button) {
-	//will prevent mouse clicks not on slider from triggering pause
-	if (y >= ofGetHeight() - playback_scrubber_->getHeight()) {
-		playback_scrubber_->onSliderEvent(this, &ofApp::onSliderEvent);
-	} else {
-		TogglePause();
+	if (current_state_ == MENU_SCREEN) {
+		for (auto pair : image_button_links_) {
+			auto image = pair.first;
+			if (x > image.x && x < (image.x + image.width) && y > image.y &&  y < (image.y + image.height)) {
+				current_state_ = LOADING_VIDEO;
+				LoadVideo(pair.second);
+				break;
+			}
+		}
+	} else if (current_state_ == WATCHING_VIDEO) {
+		//will prevent mouse clicks not on slider from triggering pause
+		if (y >= ofGetHeight() - playback_scrubber_->getHeight()) {
+			playback_scrubber_->onSliderEvent(this, &ofApp::onSliderEvent);
+		}
+		else {
+			TogglePause();
+		}
 	}
 }
 
@@ -144,9 +156,11 @@ void ofApp::TogglePause() {
 }
 
 void ofApp::LoadVideo(std::string filepath) {
-	video_.load("movies/Vince_Wilfork_Highlights.mp4"); // will need to replace with given filepath
+	gui_->setVisible(true);
+	video_.load(filepath);
 	video_.play();
 	is_paused_ = false;
+	current_state_ = WATCHING_VIDEO;
 }
 
 //Referenced from: https://forum.openframeworks.cc/t/technique-to-generate-thumbnails-from-a-lot-of-videos/14804/3
@@ -217,8 +231,8 @@ void ofApp::DisplayThumbnails() {
 			}
 
 			int unit = ofGetWidth() / 30;
-			int image_width = 4 * unit;
-			int image_height = 2 * unit;
+			int image_width = 4 * unit; //scales up width & height maintaining 16:9 ratio
+			int image_height = 2.25 * unit;
 			int horizontal_padding = unit;
 			int vertical_padding = unit;
 			
