@@ -24,10 +24,8 @@ class ofApp : public ofBaseApp{
 		AppState current_state_ = MENU_SCREEN;
 
 		//Load Variables
-		map<ofImage, ofVideoPlayer> video_map_;
-		vector<ofImage> images_;
-		vector<ofVideoPlayer> videos_;
-		vector<pair<ofRectangle, string>> image_button_links_;
+		vector<pair<ofRectangle, VideoObject>> thumbnail_button_links;
+		vector<VideoObject> video_objects_;
 
 		//Video Player Variables
 		ofxDatGui* gui_;

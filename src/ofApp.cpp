@@ -71,6 +71,8 @@ void ofApp::keyPressed(int key){
 			position = (position - 0.01 < 0) ? 0 : position - 0.02; //will floor position at 0
 			video_.setPosition(position);
 			break;
+		case OF_KEY_BACKSPACE:
+			//break from video
 		default:
 			break;
 		}
@@ -96,11 +98,11 @@ void ofApp::mouseDragged(int x, int y, int button){
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button) {
 	if (current_state_ == MENU_SCREEN) {
-		for (auto pair : image_button_links_) {
+		for (auto pair : thumbnail_button_links) {
 			auto image = pair.first;
 			if (x > image.x && x < (image.x + image.width) && y > image.y &&  y < (image.y + image.height)) {
 				current_state_ = LOADING_VIDEO;
-				LoadVideo(pair.second);
+				LoadVideo(pair.second.getVideoFilepath());
 				break;
 			}
 		}
@@ -167,7 +169,6 @@ void ofApp::LoadVideo(std::string filepath) {
 void ofApp::InitializeThumbnails() {
 	std::string videosFolder = "movies";
 	ofDirectory dir;
-	dir.allowExt("mov");
 	dir.allowExt("mp4");
 	dir.listDir(videosFolder);
 
@@ -181,27 +182,26 @@ void ofApp::InitializeThumbnails() {
 		ofFile file;
 		file.open(ofToDataPath("thumbs/" + ofFilePath::getBaseName(videoPath) + ".jpg"), ofFile::ReadWrite, false);
 
-		if (file.exists()) {
+		if (!file.exists()) {
 			//for every video, skim to the middle
 			tmp.loadMovie(videoPath);
 			tmp.play();
 			tmp.setPosition(0.1);
+			tmp.update();
+			tmp.stop();
+			
 
 			//create thumbnail from frame in middle of video
 			ofImage img;
 			img.setFromPixels(tmp.getPixelsRef());
-			tmp.stop();
 
 			//resize the thumbnail
 			float thumbWidth = 400;
 			img.resize(thumbWidth, thumbWidth * (img.getHeight() / img.getWidth()));
 
-			//save pair to global map
-			images_.push_back(img);
-			videos_.push_back(tmp);
-
 			//save image in thumbnail folder
 			img.saveImage("thumbs/" + ofFilePath::getBaseName(videoPath) + ".jpg");
+			std::cout << i << std::endl;
 		}
 	}
 }
@@ -219,7 +219,7 @@ void ofApp::DisplayThumbnails() {
 	for (int i = 0; i < dir.size(); i++) {
 		string image_path = dir.getPath(i);
 		ofFile file;
-		file.open(ofToDataPath("thumbs/" + ofFilePath::getBaseName(image_path) + ".jpg"), ofFile::ReadWrite, false);
+		file.open(ofToDataPath("movies/" + ofFilePath::getBaseName(image_path) + ".mp4"), ofFile::ReadWrite, false);
 
 		if (file.exists()) {
 			img.load("thumbs/" + ofFilePath::getBaseName(image_path) + ".jpg");
@@ -239,9 +239,22 @@ void ofApp::DisplayThumbnails() {
 			int x = horizontal_padding + column * (image_width + horizontal_padding);
 			int y = vertical_padding + row * (image_height + vertical_padding);
 
+			//Add video objects to our array if they aren't already there
+			VideoObject vid = VideoObject(ofFilePath::getBaseName(image_path));
+
+			bool contains_video = false;
+			for (auto video : video_objects_) {
+				if (video.getVideoFilepath() == "movies/" + ofFilePath::getBaseName(image_path) + ".mp4") {
+					contains_video = true;
+				}
+			}
+			if (!contains_video) {
+				video_objects_.push_back(vid);
+			}
+
 			//place a rectangle behind each image since we can use ofRectangle.intersects() and rectangles hold position and dimensions
 			ofRectangle rect = ofRectangle(x, y, image_width, image_height);
-			image_button_links_.push_back(std::make_pair(rect, "movies/" + ofFilePath::getBaseName(image_path) + ".mp4"));
+			thumbnail_button_links.push_back(std::make_pair(rect, vid));
 
 			//draw image thumbnail and label
 			img.draw(x, y, image_width, image_height);
