@@ -2,7 +2,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-	ofBackground(255, 255, 255);
+	ofBackground(50, 50, 50);
 	//ofSetVerticalSync(true);
 
 	InitializeThumbnails();
@@ -54,7 +54,6 @@ void ofApp::drawWatchingVideo() {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-
 	if (current_state_ == WATCHING_VIDEO) {
 		float position = video_.getPosition();
 		switch (key) {
@@ -211,15 +210,33 @@ void ofApp::DisplayThumbnails() {
 		if (file.exists()) {
 			img.load("thumbs/" + ofFilePath::getBaseName(image_path) + ".jpg");
 
+			//when we get to the last column move to the next row
 			if (column >= 6) {
 				row++;
 				column = 0;
 			}
 
-			int image_size = 400;
-			int padding = 100;
+			int unit = ofGetWidth() / 30;
+			int image_width = 4 * unit;
+			int image_height = 2 * unit;
+			int horizontal_padding = unit;
+			int vertical_padding = unit;
+			
+			int x = horizontal_padding + column * (image_width + horizontal_padding);
+			int y = vertical_padding + row * (image_height + vertical_padding);
 
-			img.draw(padding + column * (image_size + padding), padding + row * (image_size + padding));
+			//place a rectangle behind each image since we can use ofRectangle.intersects() and rectangles hold position and dimensions
+			ofRectangle rect = ofRectangle(x, y, image_width, image_height);
+			image_button_links_.push_back(std::make_pair(rect, "movies/" + ofFilePath::getBaseName(image_path) + ".mp4"));
+
+			//draw image thumbnail and label
+			img.draw(x, y, image_width, image_height);
+
+			string label = ofFilePath::getBaseName(image_path);
+			std::replace(label.begin(), label.end(), '_', ' ');
+			ofDrawBitmapString(label, x + (image_width - 8 * label.size()) / 2, y + image_height + (vertical_padding / 6));
+
+			//move to next column
 			column++;
 		}
 	}

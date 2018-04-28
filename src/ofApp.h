@@ -9,6 +9,7 @@
 
 using std::vector;
 using std::map;
+using std::pair;
 
 class ofApp : public ofBaseApp{
 
@@ -26,6 +27,7 @@ class ofApp : public ofBaseApp{
 		map<ofImage, ofVideoPlayer> video_map_;
 		vector<ofImage> images_;
 		vector<ofVideoPlayer> videos_;
+		vector<pair<ofRectangle, string>> image_button_links_;
 
 		//Video Player Variables
 		ofxDatGui* gui_;
