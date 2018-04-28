@@ -36,4 +36,6 @@ Updated all GUI elements for a resized window, including the video scrubbing ele
 
 The thumbnail load issue stemmed from ofBackground being displayed over the object and being displayed at RGB(0, 0, 0).  After changing the location of where the program sets ofBackground, the problem was resolved and the image files showed up as expected.  After a bit of resizing, the images now are displayed properly and resize with the window, if necessary.
 
+#### (4/27) Added ofRectangle Objects, Makes Thumbnails Clickable
 
+Added ofRectangle objects (because they store x-position, y-position, width and height) and programmed the on-click methods for these rectangles to load the video filepath that is embedded in the data pair.  Later plan on changing each rectangle object to link to a video object.
