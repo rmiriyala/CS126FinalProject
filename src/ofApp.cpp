@@ -3,22 +3,23 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 	ofBackground(255, 255, 255);
-	ofSetVerticalSync(true);
+	//ofSetVerticalSync(true);
 
 	InitializeThumbnails();
 	std::cout << "done" << std::endl;
 
+	//Setup GUI
 	gui_ = new ofxDatGui(ofxDatGuiAnchor::BOTTOM_LEFT);
 	playback_scrubber_ = gui_->addSlider("Playback Slider", 0, 1, 0);
 	playback_scrubber_->setWidth(ofGetWidth(), 0);
-
+	gui_->setVisible(false);
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
 
 	if (current_state_ == MENU_SCREEN) {
-		
+		//do nothing
 	} else if (current_state_ == WATCHING_VIDEO) {
 		if (ofGetElapsedTimeMillis() - last_mouse_usage_ > 3000) {
 			ofHideCursor();
@@ -31,19 +32,16 @@ void ofApp::update(){
 }
 
 //--------------------------------------------------------------
-void ofApp::draw(){
-	// ofSetHexColor(0xFFFFFF);
-
+void ofApp::draw() {
 	if (current_state_ == MENU_SCREEN) {
 		drawMenuScreen();
-	}
-	if (current_state_ == WATCHING_VIDEO) {
+	} else if (current_state_ == WATCHING_VIDEO) {
 		drawWatchingVideo();
 	}
 }
 
 void ofApp::drawMenuScreen() {
-	ofSetHexColor(0xFFFFFF);
+	DisplayThumbnails();
 }
 
 void ofApp::drawWatchingVideo() {
@@ -56,25 +54,27 @@ void ofApp::drawWatchingVideo() {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-	float position = video_.getPosition();
 
-	switch (key) {
-	case 'k':
-		TogglePause();
-		break;
-	case ' ':
-		TogglePause();
-		break;
-	case 'l':
-		position = (position + 0.01 > 1) ? 1 : position + 0.02; //will cap position to 1
-		video_.setPosition(position);
-		break;
-	case 'j':
-		position = (position - 0.01 < 0) ? 0 : position - 0.02; //will floor position at 0
-		video_.setPosition(position);
-		break;
-	default:
-		break;
+	if (current_state_ == WATCHING_VIDEO) {
+		float position = video_.getPosition();
+		switch (key) {
+		case 'k':
+			TogglePause();
+			break;
+		case ' ':
+			TogglePause();
+			break;
+		case 'l':
+			position = (position + 0.01 > 1) ? 1 : position + 0.02; //will cap position to 1
+			video_.setPosition(position);
+			break;
+		case 'j':
+			position = (position - 0.01 < 0) ? 0 : position - 0.02; //will floor position at 0
+			video_.setPosition(position);
+			break;
+		default:
+			break;
+		}
 	}
 }
 
@@ -157,27 +157,70 @@ void ofApp::InitializeThumbnails() {
 	dir.allowExt("mov");
 	dir.allowExt("mp4");
 	dir.listDir(videosFolder);
+
 	ofVideoPlayer tmp;
+
+	int column = 0;
+	int row = 0;
 
 	for (int i = 0; i < dir.size(); i++) {
 		string videoPath = dir.getPath(i);
-
-		//my addition to check if it exists, speeds up program 
 		ofFile file;
 		file.open(ofToDataPath("thumbs/" + ofFilePath::getBaseName(videoPath) + ".jpg"), ofFile::ReadWrite, false);
-		if (!file.exists()) {
+
+		if (file.exists()) {
+			//for every video, skim to the middle
 			tmp.loadMovie(videoPath);
 			tmp.play();
 			tmp.setPosition(0.1);
 
+			//create thumbnail from frame in middle of video
 			ofImage img;
 			img.setFromPixels(tmp.getPixelsRef());
+			tmp.stop();
 
-			float thumbWidth = 120;//change this for another thumb size
+			//resize the thumbnail
+			float thumbWidth = 400;
 			img.resize(thumbWidth, thumbWidth * (img.getHeight() / img.getWidth()));
 
+			//save pair to global map
+			images_.push_back(img);
+			videos_.push_back(tmp);
+
+			//save image in thumbnail folder
 			img.saveImage("thumbs/" + ofFilePath::getBaseName(videoPath) + ".jpg");
 		}
+	}
+}
 
+void ofApp::DisplayThumbnails() {
+	std::string thumbs_folder = "thumbs";
+	ofDirectory dir;
+	dir.allowExt("jpg");
+	dir.listDir(thumbs_folder);
+
+	int column = 0;
+	int row = 0;
+
+	ofImage img;
+	for (int i = 0; i < dir.size(); i++) {
+		string image_path = dir.getPath(i);
+		ofFile file;
+		file.open(ofToDataPath("thumbs/" + ofFilePath::getBaseName(image_path) + ".jpg"), ofFile::ReadWrite, false);
+
+		if (file.exists()) {
+			img.load("thumbs/" + ofFilePath::getBaseName(image_path) + ".jpg");
+
+			if (column >= 6) {
+				row++;
+				column = 0;
+			}
+
+			int image_size = 400;
+			int padding = 100;
+
+			img.draw(padding + column * (image_size + padding), padding + row * (image_size + padding));
+			column++;
+		}
 	}
 }

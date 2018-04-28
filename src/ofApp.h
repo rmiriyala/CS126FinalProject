@@ -4,25 +4,32 @@
 #include "ofxDatGui.h"
 #include "video_object.h"
 #include <string>
+#include <vector>
+#include <map>
 
+using std::vector;
+using std::map;
 
 class ofApp : public ofBaseApp{
 
 	enum AppState {
-		WATCHING_VIDEO,
-		MENU_SCREEN
+		WATCHING_VIDEO, //for drawVideo()
+		LOADING_VIDEO, //to prompt LoadVideo()
+		MENU_SCREEN // for drawMain()
 	};
 
 	private:
 		//State Control
 		AppState current_state_ = MENU_SCREEN;
 
-		//Video Player Variables
-		ofxDatGui * gui_;
-		ofxDatGuiSlider* playback_scrubber_;
-		ofxDatGuiMatrix* video_matrix_;
+		//Load Variables
+		map<ofImage, ofVideoPlayer> video_map_;
+		vector<ofImage> images_;
+		vector<ofVideoPlayer> videos_;
 
-		VideoObject media_;
+		//Video Player Variables
+		ofxDatGui* gui_;
+		ofxDatGuiSlider* playback_scrubber_;
 		ofVideoPlayer video_;
 
 		std::size_t last_mouse_usage_;
@@ -53,4 +60,5 @@ class ofApp : public ofBaseApp{
 		void TogglePause(); //toggles the pause/play functionality in video
 		void LoadVideo(std::string filepath);
 		void InitializeThumbnails();
+		void DisplayThumbnails();
 };
