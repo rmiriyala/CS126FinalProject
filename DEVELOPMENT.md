@@ -27,3 +27,13 @@ Downloaded and added ofDatGUI library to the project using ProjectGenerator and 
 #### (4/27) Added Video Scrubber
 
 Created video scrubber with the ofDatGUI library's slider tool; set the code up in a way that allows the playback slider to be updated by any change in the video's playback position including the jump-position 'j' and 'k' keys.  Also avoids the issue of toggling pause, which used to be the standard mouse-click action.
+
+#### (4/27) Update GUI for Resized Window and Beginning to Add File System
+
+Updated all GUI elements for a resized window, including the video scrubbing element.  Thumbnail creation is successful, though loading the thumbnails is proving to be seriously difficult- only getting black squares (correct size and dimensions) instead of the loaded image.  In the filesystem (windows explorer), these images in the location they are stored bin/data/thumbs appear to be working fine.
+
+#### (4/27) Fixed Thumbnail Load Issue
+
+The thumbnail load issue stemmed from ofBackground being displayed over the object and being displayed at RGB(0, 0, 0).  After changing the location of where the program sets ofBackground, the problem was resolved and the image files showed up as expected.  After a bit of resizing, the images now are displayed properly and resize with the window, if necessary.
+
+
