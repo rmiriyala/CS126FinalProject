@@ -5,10 +5,22 @@
 #include "video_object.h"
 #include <string>
 
+
 class ofApp : public ofBaseApp{
+
+	enum AppState {
+		WATCHING_VIDEO,
+		MENU_SCREEN
+	};
+
 	private:
+		//State Control
+		AppState current_state_ = MENU_SCREEN;
+
+		//Video Player Variables
 		ofxDatGui * gui_;
 		ofxDatGuiSlider* playback_scrubber_;
+		ofxDatGuiMatrix* video_matrix_;
 
 		VideoObject media_;
 		ofVideoPlayer video_;
@@ -20,6 +32,9 @@ class ofApp : public ofBaseApp{
 		void setup();
 		void update();
 		void draw();
+
+		void drawMenuScreen();
+		void drawWatchingVideo();
 
 		void keyPressed(int key);
 		void keyReleased(int key);
@@ -36,4 +51,6 @@ class ofApp : public ofBaseApp{
 		
 
 		void TogglePause(); //toggles the pause/play functionality in video
+		void LoadVideo(std::string filepath);
+		void InitializeThumbnails();
 };
