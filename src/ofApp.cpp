@@ -72,7 +72,8 @@ void ofApp::keyPressed(int key){
 			video_.setPosition(position);
 			break;
 		case OF_KEY_BACKSPACE:
-			//break from video
+			CloseVideo(video_objects_[current_video_object_]);
+			break;
 		default:
 			break;
 		}
@@ -102,7 +103,7 @@ void ofApp::mousePressed(int x, int y, int button) {
 			auto image = pair.first;
 			if (x > image.x && x < (image.x + image.width) && y > image.y &&  y < (image.y + image.height)) {
 				current_state_ = LOADING_VIDEO;
-				LoadVideo(pair.second.getVideoFilepath());
+				LoadVideo(pair.second);
 				break;
 			}
 		}
@@ -157,12 +158,38 @@ void ofApp::TogglePause() {
 	video_.setPaused(is_paused_);
 }
 
-void ofApp::LoadVideo(std::string filepath) {
+void ofApp::LoadVideo(VideoObject video) {
+	string filepath = video.getVideoFilepath();
+
+	for (int i = 0; i < video_objects_.size(); i++) {
+		if (video_objects_[i].getVideoFilepath() == filepath) {
+			current_video_object_ = i;
+			break;
+		}
+	}
+
 	gui_->setVisible(true);
 	video_.load(filepath);
 	video_.play();
+	video_.setPosition(video.getVideoPlaybackPosition());
+	video_.update();
 	is_paused_ = false;
 	current_state_ = WATCHING_VIDEO;
+}
+
+void ofApp::CloseVideo(VideoObject video) {
+	current_state_ = CLOSING_VIDEO;
+	if (video_.getPosition() > 0.99) {
+		video.setWatched(true);
+		//prompt rating for finished video
+		video.setPlaybackPosition(0);
+	} else {
+		video.setPlaybackPosition(video_.getPosition());
+	}
+	video_.stop();
+	gui_->setVisible(false);
+	drawMenuScreen();
+	current_state_ = MENU_SCREEN;
 }
 
 //Referenced from: https://forum.openframeworks.cc/t/technique-to-generate-thumbnails-from-a-lot-of-videos/14804/3

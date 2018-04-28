@@ -16,6 +16,7 @@ class ofApp : public ofBaseApp{
 	enum AppState {
 		WATCHING_VIDEO, //for drawVideo()
 		LOADING_VIDEO, //to prompt LoadVideo()
+		CLOSING_VIDEO,
 		MENU_SCREEN // for drawMain()
 	};
 
@@ -31,6 +32,7 @@ class ofApp : public ofBaseApp{
 		ofxDatGui* gui_;
 		ofxDatGuiSlider* playback_scrubber_;
 		ofVideoPlayer video_;
+		int current_video_object_;
 
 		std::size_t last_mouse_usage_;
 		bool is_paused_;
@@ -58,7 +60,8 @@ class ofApp : public ofBaseApp{
 		
 
 		void TogglePause(); //toggles the pause/play functionality in video
-		void LoadVideo(std::string filepath);
+		void LoadVideo(VideoObject video);
+		void CloseVideo(VideoObject video);
 		void InitializeThumbnails();
 		void DisplayThumbnails();
 };

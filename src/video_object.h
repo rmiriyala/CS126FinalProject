@@ -13,6 +13,9 @@ public:
 	VideoObject(string filename);
 
     std::string getVideoFilepath();
+	double getVideoPlaybackPosition();
     bool isWatched();
+
     void setWatched(bool watched);
+	void setPlaybackPosition(double position);
 };

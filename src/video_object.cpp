@@ -19,6 +19,14 @@ std::string VideoObject::getVideoFilepath() {
     return video_filepath_;
 }
 
+double VideoObject::getVideoPlaybackPosition() {
+	return playback_position_;
+}
+
 void VideoObject::setWatched(bool watched) {
     VideoObject::watched_ = watched;
+}
+
+void VideoObject::setPlaybackPosition(double position) {
+	playback_position_ = position;
 }
