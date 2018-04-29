@@ -60,8 +60,8 @@ class ofApp : public ofBaseApp{
 		
 
 		void TogglePause(); //toggles the pause/play functionality in video
-		void LoadVideo(VideoObject video);
-		void CloseVideo(VideoObject video);
+		void LoadVideo(VideoObject &video);
+		void CloseVideo(VideoObject &video);
 		void InitializeThumbnails();
 		void DisplayThumbnails();
 };

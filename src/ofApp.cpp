@@ -72,7 +72,8 @@ void ofApp::keyPressed(int key){
 			video_.setPosition(position);
 			break;
 		case OF_KEY_BACKSPACE:
-			CloseVideo(video_objects_[current_video_object_]);
+			CloseVideo(thumbnail_button_links.at(current_video_object_).second);
+			std::cout << "After saving: " << thumbnail_button_links.at(current_video_object_).second.getVideoPlaybackPosition() << std::endl;
 			break;
 		default:
 			break;
@@ -103,6 +104,7 @@ void ofApp::mousePressed(int x, int y, int button) {
 			auto image = pair.first;
 			if (x > image.x && x < (image.x + image.width) && y > image.y &&  y < (image.y + image.height)) {
 				current_state_ = LOADING_VIDEO;
+				std::cout << "Load at mouse press: " << pair.second.getVideoPlaybackPosition() << std::endl;
 				LoadVideo(pair.second);
 				break;
 			}
@@ -158,7 +160,7 @@ void ofApp::TogglePause() {
 	video_.setPaused(is_paused_);
 }
 
-void ofApp::LoadVideo(VideoObject video) {
+void ofApp::LoadVideo(VideoObject &video) {
 	string filepath = video.getVideoFilepath();
 
 	for (int i = 0; i < video_objects_.size(); i++) {
@@ -171,23 +173,27 @@ void ofApp::LoadVideo(VideoObject video) {
 	gui_->setVisible(true);
 	video_.load(filepath);
 	video_.play();
+	std::cout << "Loading video at: " << video.getVideoPlaybackPosition() << std::endl;
 	video_.setPosition(video.getVideoPlaybackPosition());
 	video_.update();
 	is_paused_ = false;
 	current_state_ = WATCHING_VIDEO;
 }
 
-void ofApp::CloseVideo(VideoObject video) {
+void ofApp::CloseVideo(VideoObject &video) {
 	current_state_ = CLOSING_VIDEO;
+	video.setPlaybackPosition(video_.getPosition());
 	if (video_.getPosition() > 0.99) {
 		video.setWatched(true);
 		//prompt rating for finished video
 		video.setPlaybackPosition(0);
-	} else {
-		video.setPlaybackPosition(video_.getPosition());
 	}
+
+	std::cout << video_.getPosition() << std::endl;
+	std::cout << "Saved at: " << video.getVideoPlaybackPosition() << std::endl;
 	video_.stop();
 	gui_->setVisible(false);
+
 	drawMenuScreen();
 	current_state_ = MENU_SCREEN;
 }
