@@ -30,7 +30,7 @@ Created video scrubber with the ofDatGUI library's slider tool; set the code up 
 
 #### (4/27) Update GUI for Resized Window and Beginning to Add File System
 
-Updated all GUI elements for a resized window, including the video scrubbing element.  Thumbnail creation is successful, though loading the thumbnails is proving to be seriously difficult- only getting black squares (correct size and dimensions) instead of the loaded image.  In the filesystem (windows explorer), these images in the location they are stored bin/data/thumbs appear to be working fine.
+Updated all GUI elements for a resized window, including the video scrubbing element. Also added the feature where if you leave the mouse stagnant (on the video screen), after 3 seconds it will disappear. Plan on extending this to the rest of the video interface. Thumbnail creation is successful, though loading the thumbnails is proving to be seriously difficult- only getting black squares (correct size and dimensions) instead of the loaded image.  In the filesystem (windows explorer), these images in the location they are stored bin/data/thumbs appear to be working fine.
 
 #### (4/27) Fixed Thumbnail Load Issue
 
@@ -39,3 +39,11 @@ The thumbnail load issue stemmed from ofBackground being displayed over the obje
 #### (4/27) Added ofRectangle Objects, Makes Thumbnails Clickable
 
 Added ofRectangle objects (because they store x-position, y-position, width and height) and programmed the on-click methods for these rectangles to load the video filepath that is embedded in the data pair.  Later plan on changing each rectangle object to link to a video object.
+
+#### (4/28) Implemented GUI Video Selection With Objects
+
+Now have a VideoObject to represent the video, which will allow it to save the image/video filepath, whether it was watched, the rating, and the playback position of the video.  The user class, which has yet to be created, is planned to hold an vector of video objects (currently held in ofApp) and will be able to see/recall their preferences and watch times based on their history.
+
+#### (4/28) Added Video Closing System
+
+The video closing system has been implemented, but the saving of the time is not working; will probably look into what is going wrong, best guess at this point is there may be a problem with copying and I will have to directly change the object using a memory address in the future.
