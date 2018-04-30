@@ -38,3 +38,7 @@ void VideoObject::setWatched(bool watched) {
 void VideoObject::setPlaybackPosition(double position) {
 	playback_position_ = position;
 }
+
+void VideoObject::setRating(int rating) {
+	rating_ = rating;
+}

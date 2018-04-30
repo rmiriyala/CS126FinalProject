@@ -19,8 +19,8 @@ void ofApp::setup(){
 	playback_scrubber_->setBorderVisible(false);
 
 	//Setup Labels
-	video_label_.load(OF_TTF_SERIF, 40);
-	menu_label_.load(OF_TTF_SERIF, 20);
+	video_label_.load(OF_TTF_SANS, 40);
+	menu_label_.load(OF_TTF_SANS, 25);
 
 	//Hide GUI
 	gui_->setVisible(false);

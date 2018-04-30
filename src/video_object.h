@@ -21,4 +21,5 @@ public:
 	void setLabel(std::string label);
     void setWatched(bool watched);
 	void setPlaybackPosition(double position);
+	void setRating(int rating);
 };
