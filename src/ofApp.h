@@ -38,6 +38,7 @@ class ofApp : public ofBaseApp{
 
 		//Playback Control Elements
 		ofTrueTypeFont video_label_;
+		ofTrueTypeFont menu_label_;
 
 		ofImage playback_background_;
 		ofImage play_icon_;

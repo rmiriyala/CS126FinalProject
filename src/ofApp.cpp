@@ -21,6 +21,7 @@ void ofApp::setup(){
 
 	//Setup Labels
 	video_label_.load(OF_TTF_SERIF, 40);
+	menu_label_.load(OF_TTF_SERIF, 20);
 
 	//Hide GUI
 	gui_->setVisible(false);
@@ -106,8 +107,10 @@ void ofApp::drawPlaybackControls() {
 	forward_button_ = ofRectangle(x + 1.5 * ICON_SIZE, y, ICON_SIZE, ICON_SIZE);
 
 	//Draw back button
-	back_icon_.draw(10, 0);
-	back_button_ = ofRectangle(10, 0, ICON_SIZE, ICON_SIZE);
+	y = (1.1 * ICON_SIZE - back_icon_.getHeight()) / 2;
+	x = y;
+	back_icon_.draw(x, y);
+	back_button_ = ofRectangle(x, y, back_icon_.getWidth(), back_icon_.getHeight());
 
 	//Add to array, if not already in there
 	if (playback_buttons_.size() != 4) {
@@ -191,7 +194,6 @@ void ofApp::mousePressed(int x, int y, int button) {
 	} else if (current_state_ == WATCHING_VIDEO) {
 		//will prevent mouse clicks not on slider from triggering pause
 		if (ofGetElapsedTimeMillis() - last_mouse_usage_ > 2500) {
-			std::cout << "TIME IS GREATER" << std::endl;
 			TogglePause();
 		} else { //playback controls are being shown
 			if (y >= ofGetHeight() - playback_scrubber_->getHeight()) { //if we are operating on the playback slider
@@ -295,7 +297,6 @@ void ofApp::LoadVideo(VideoObject &video) {
 
 	video_.load(filepath);
 	video_.play();
-	std::cout << "Loading video at: " << video.getVideoPlaybackPosition() << std::endl;
 	video_.setPosition(video.getVideoPlaybackPosition());
 	video_.update();
 	is_paused_ = false;
@@ -310,9 +311,6 @@ void ofApp::CloseVideo(VideoObject &video) {
 		//prompt rating for finished video
 		video.setPlaybackPosition(0);
 	}
-
-	std::cout << video_.getPosition() << std::endl;
-	std::cout << "Saved at: " << video.getVideoPlaybackPosition() << std::endl;
 	video_.stop();
 	gui_->setVisible(false);
 
@@ -358,7 +356,6 @@ void ofApp::InitializeThumbnails() {
 
 			//save image in thumbnail folder
 			img.saveImage("thumbs/" + ofFilePath::getBaseName(videoPath) + ".jpg");
-			std::cout << i << std::endl;
 		}
 	}
 }
@@ -374,7 +371,7 @@ void ofApp::InitializeIcons() {
 	pause_icon_.resize(ICON_SIZE, ICON_SIZE);
 	forward_icon_.resize(ICON_SIZE, ICON_SIZE);
 	rewind_icon_.resize(ICON_SIZE, ICON_SIZE);
-	back_icon_.resize(ICON_SIZE, ICON_SIZE);
+	back_icon_.resize(0.9 * ICON_SIZE, 0.9 * ICON_SIZE);
 }
 
 void ofApp::DisplayThumbnails() {
@@ -429,7 +426,10 @@ void ofApp::DisplayThumbnails() {
 			string label = ofFilePath::getBaseName(image_path);
 			std::replace(label.begin(), label.end(), '_', ' ');
 			vid.setLabel(label);
-			ofDrawBitmapString(label, x + (image_width - 8 * label.size()) / 2, y + image_height + (vertical_padding / 6));
+
+			int x_pos = x + ((image_width - menu_label_.stringWidth(label)) / 2);
+			int y_pos = y + image_height + menu_label_.getSize() + vertical_padding / 6;
+			menu_label_.drawString(label, x_pos, y_pos);
 
 			//place a rectangle behind each image since we can use ofRectangle.intersects() and rectangles hold position and dimensions
 			ofRectangle rect = ofRectangle(x, y, image_width, image_height);
