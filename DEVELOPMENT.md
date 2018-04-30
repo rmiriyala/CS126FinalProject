@@ -47,3 +47,13 @@ Now have a VideoObject to represent the video, which will allow it to save the i
 #### (4/28) Added Video Closing System
 
 The video closing system has been implemented, but the saving of the time is not working; will probably look into what is going wrong, best guess at this point is there may be a problem with copying and I will have to directly change the object using a memory address in the future.
+
+#### (4/29) Added and Implemented All Playback Controls on Interface
+
+Added a graphical interface for the playback controls, including the pause, play, forward, rewind and back buttons.  This was done using the ofImage class for the buttons, after multiple failed attempts to continue to use the ofxDatGUI class, and by placing ofRectangles behind them in the same way the thumbnail buttons are used.
+
+The playback controls will now disappear along with the mouse after a 2.5 second delay that is traced by the global variable last_mouse_usage_; on a side note, the playback controls from the keyboard also will force the display of this interface, though that can be (and may be) removed by deleting the call to last_mouse_usage_ at the end of TogglePause(), Forward(), and Rewind().
+
+#### (4/29) Fixed Bugs Related to Thumbnail Creation, Added Proper Labels
+
+Using [ofTrueTypeFont](http://halfdanj.github.io/ofDocGenerator/ofTrueTypeFont.html), I changed the bitmap string drawings for labels into correctly sized labels (including one in the playback control interface) so the user is now able to read the labels without strain.  In addition, added an optional Netflix logo that can be removed by commenting and uncommenting two statements of code.
