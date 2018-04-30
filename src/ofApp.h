@@ -24,9 +24,10 @@ class ofApp : public ofBaseApp{
 		//State Control
 		AppState current_state_ = MENU_SCREEN;
 
-		//Load Variables
+		//Menu Elements
 		vector<pair<ofRectangle, VideoObject>> thumbnail_button_links;
 		vector<VideoObject> video_objects_;
+		ofImage logo_;
 
 		//GUI Elements
 		ofxDatGui* gui_;
@@ -91,6 +92,7 @@ class ofApp : public ofBaseApp{
 		void InitializeThumbnails();
 		void InitializeIcons();
 		void DisplayThumbnails();
+		void DisplayLogo();
 
 		const int ICON_SIZE = 100;
 };

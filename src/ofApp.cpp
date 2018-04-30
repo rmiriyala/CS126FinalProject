@@ -10,7 +10,6 @@ void ofApp::setup(){
 	InitializeIcons();
 	std::cout << "loading icons...done" << std::endl;
 
-
 	//Setup GUI
 	gui_ = new ofxDatGui(ofxDatGuiAnchor::BOTTOM_LEFT);
 
@@ -55,6 +54,7 @@ void ofApp::draw() {
 }
 
 void ofApp::drawMenuScreen() {
+	DisplayLogo();
 	DisplayThumbnails();
 }
 
@@ -361,6 +361,7 @@ void ofApp::InitializeThumbnails() {
 }
 
 void ofApp::InitializeIcons() {
+	//Playback control icons
 	play_icon_ = ofImage("icons/play.png");
 	pause_icon_ = ofImage("icons/pause.png");
 	forward_icon_ = ofImage("icons/forward.png");
@@ -372,6 +373,12 @@ void ofApp::InitializeIcons() {
 	forward_icon_.resize(ICON_SIZE, ICON_SIZE);
 	rewind_icon_.resize(ICON_SIZE, ICON_SIZE);
 	back_icon_.resize(0.9 * ICON_SIZE, 0.9 * ICON_SIZE);
+
+	//Netflix logo
+	logo_ = ofImage("icons/Netflix.png");
+	float ratio = logo_.getHeight() / logo_.getWidth();
+	int width = (ofGetWidth() * 5) / 10;
+	logo_.resize(width, ratio * width);
 }
 
 void ofApp::DisplayThumbnails() {
@@ -419,7 +426,8 @@ void ofApp::DisplayThumbnails() {
 			
 			//calculate next x and y
 			int x = horizontal_padding + column * (image_width + horizontal_padding);
-			int y = vertical_padding + row * (image_height + vertical_padding);
+			int y = vertical_padding + ((ofGetHeight() / 10) + (logo_.getHeight())) +  row * (image_height + vertical_padding); //with logo
+			//int y = vertical_padding + row * (image_height + vertical_padding);
 
 			//draw image thumbnail and label using x and y coordinates
 			img.draw(x, y, image_width, image_height);
@@ -440,4 +448,10 @@ void ofApp::DisplayThumbnails() {
 			column++;
 		}
 	}
+}
+
+void ofApp::DisplayLogo() {
+	int x = (ofGetWidth() - logo_.getWidth()) / 2;
+	int y = ofGetHeight() / 10;
+	logo_.draw(x, y); //optional netflix logo
 }
