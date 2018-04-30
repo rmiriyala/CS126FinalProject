@@ -316,7 +316,7 @@ void ofApp::CloseVideo(VideoObject &video) {
 	video_.stop();
 	gui_->setVisible(false);
 
-	ofShowCursor();
+	ofShowCursor(); 
 	drawMenuScreen();
 	current_state_ = MENU_SCREEN;
 }
