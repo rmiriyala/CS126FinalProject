@@ -52,7 +52,7 @@ The video closing system has been implemented, but the saving of the time is not
 
 Added a graphical interface for the playback controls, including the pause, play, forward, rewind and back buttons.  This was done using the ofImage class for the buttons, after multiple failed attempts to continue to use the ofxDatGUI class, and by placing ofRectangles behind them in the same way the thumbnail buttons are used.
 
-The playback controls will now disappear along with the mouse after a 2.5 second delay that is traced by the global variable last_mouse_usage_; on a side note, the playback controls from the keyboard also will force the display of this interface, though that can be (and may be) removed by deleting the call to last_mouse_usage_ at the end of TogglePause(), Forward(), and Rewind().
+The playback controls will now disappear along with the mouse after a 2.5 second delay that is traced by the global variable *last_mouse_usage_*; on a side note, the playback controls from the keyboard also will force the display of this interface, though that can be (and may be) removed by deleting the call to *last_mouse_usage_* at the end of *TogglePause()*, *Forward()*, and *Rewind()*.
 
 #### (4/29) Fixed Bugs Related to Thumbnail Creation, Added Proper Labels
 
