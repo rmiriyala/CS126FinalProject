@@ -16,6 +16,7 @@ public:
     std::string getVideoFilepath();
 	std::string getLabel();
 	double getVideoPlaybackPosition();
+	int getRating();
     bool isWatched();
 
 	void setLabel(std::string label);

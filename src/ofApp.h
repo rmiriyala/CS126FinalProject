@@ -17,6 +17,8 @@ class ofApp : public ofBaseApp{
 		WATCHING_VIDEO, //for drawVideo()
 		LOADING_VIDEO, //to prompt LoadVideo()
 		CLOSING_VIDEO,
+		USING_PLAYBACK_CONTROLS,
+		RATING_VIDEO,
 		MENU_SCREEN // for drawMain()
 	};
 
@@ -48,12 +50,21 @@ class ofApp : public ofBaseApp{
 		ofImage rewind_icon_;
 		ofImage back_icon_;
 
+		vector<ofRectangle> playback_buttons_;
 		ofRectangle play_pause_button_;
 		ofRectangle forward_button_;
 		ofRectangle rewind_button_;
 		ofRectangle back_button_;
-		vector<ofRectangle> playback_buttons_;
 
+		//Ratings Elements
+		ofImage like_icon_;
+		ofImage dislike_icon_;
+
+		vector<ofRectangle> rating_buttons_;
+		ofRectangle like_button_;
+		ofRectangle dislike_button_;
+
+		//Playback Hiding Variables
 		std::size_t last_mouse_usage_;
 		bool is_paused_;
 
@@ -63,23 +74,25 @@ class ofApp : public ofBaseApp{
 		void draw();
 
 		void drawMenuScreen();
-		void drawWatchingVideoFull();
-		void drawWatchingVideoSmall();
+		void drawVideoFull();
+		void drawVideoSmall();
 		void drawPlaybackControls();
 		void hidePlaybackControls();
+		void drawClosingScreen();
+		void drawRatingBox();
 
 		void keyPressed(int key);
-		void keyReleased(int key);
+		//void keyReleased(int key);
 		void mouseMoved(int x, int y );
-		void mouseDragged(int x, int y, int button);
+		//void mouseDragged(int x, int y, int button);
 		void mousePressed(int x, int y, int button);
 		void onSliderEvent(ofxDatGuiSliderEvent e);
-		void mouseReleased(int x, int y, int button);
-		void mouseEntered(int x, int y);
+		//void mouseReleased(int x, int y, int button);
+		//void mouseEntered(int x, int y);
 		void mouseExited(int x, int y);
 		void windowResized(int w, int h);
-		void dragEvent(ofDragInfo dragInfo);
-		void gotMessage(ofMessage msg);
+		//void dragEvent(ofDragInfo dragInfo);
+		//void gotMessage(ofMessage msg);
 		
 
 		void TogglePause(); //toggles the pause/play functionality in video
@@ -88,6 +101,8 @@ class ofApp : public ofBaseApp{
 
 		void LoadVideo(VideoObject &video);
 		void CloseVideo(VideoObject &video);
+		void GetUserRating(VideoObject &video);
+
 
 		void InitializeThumbnails();
 		void InitializeIcons();

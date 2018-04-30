@@ -22,7 +22,7 @@ void ofApp::setup(){
 	video_label_.load(OF_TTF_SANS, 40);
 	menu_label_.load(OF_TTF_SANS, 25);
 
-	//Hide GUI
+	//Hide GUIs
 	gui_->setVisible(false);
 }
 
@@ -30,9 +30,23 @@ void ofApp::setup(){
 void ofApp::update() {
 	if (current_state_ == MENU_SCREEN) {
 		//do nothing
-	} else if (current_state_ == WATCHING_VIDEO) {
+	}
+	else if (current_state_ == WATCHING_VIDEO || current_state_ == USING_PLAYBACK_CONTROLS) {
+		current_state_ = (ofGetElapsedTimeMillis() - last_mouse_usage_ > 2500) ? WATCHING_VIDEO : USING_PLAYBACK_CONTROLS;
 		video_.update();
 		playback_scrubber_->setValue(video_.getPosition());
+	}
+	else if (current_state_ == RATING_VIDEO || current_state_ == CLOSING_VIDEO) {
+		bool isRated = (thumbnail_button_links.at(current_video_object_).second.getRating() != -1);
+		bool isWatched = thumbnail_button_links.at(current_video_object_).second.isWatched();
+		current_state_ = (!isRated && isWatched) ? RATING_VIDEO : CLOSING_VIDEO;
+
+		if (current_state_ == RATING_VIDEO) {
+			//NEEDS IMPLEMENTATION
+		}
+		else {
+			CloseVideo(thumbnail_button_links.at(current_video_object_).second);
+		}
 	}
 }
 
@@ -40,26 +54,35 @@ void ofApp::update() {
 void ofApp::draw() {
 	if (current_state_ == MENU_SCREEN) {
 		drawMenuScreen();
-	} else if (current_state_ == WATCHING_VIDEO) {
-		if (ofGetElapsedTimeMillis() - last_mouse_usage_ > 2500) {
-			ofHideCursor();
-			hidePlaybackControls();
-			drawWatchingVideoFull();
-		} else {
-			ofShowCursor();
-			drawWatchingVideoSmall();
-			drawPlaybackControls();
-		}
+	}
+	else if (current_state_ == WATCHING_VIDEO) {
+		ofHideCursor();
+		hidePlaybackControls();
+		drawVideoFull();
+	}
+	else if (current_state_ == USING_PLAYBACK_CONTROLS) {
+		ofShowCursor();
+		drawVideoSmall();
+		drawPlaybackControls();
+	}
+	else if (current_state_ == RATING_VIDEO) {
+		drawRatingBox();
+	}
+	else if (current_state_ == CLOSING_VIDEO) {
+		hidePlaybackControls();
+		drawClosingScreen();
 	}
 }
 
+//ALL GOOD
 void ofApp::drawMenuScreen() {
 	ofBackground(50, 50, 50);
 	DisplayLogo();
 	DisplayThumbnails();
 }
 
-void ofApp::drawWatchingVideoFull() {
+//ALL GOOD
+void ofApp::drawVideoFull() {
 	int video_width = ofGetWidth();
 	int video_height = ofGetHeight();
 	int x_position = 0;
@@ -67,44 +90,48 @@ void ofApp::drawWatchingVideoFull() {
 	video_.draw(x_position, y_position, video_width, video_height);
 }
 
-void ofApp::drawWatchingVideoSmall() {
+//ALL GOOD
+void ofApp::drawVideoSmall() {
 	ofBackground(0, 0, 0);
 	int video_height = ofGetHeight() - (2.2 * ICON_SIZE) - (playback_scrubber_->getHeight());
 	int video_width = video_height * DISPLAY_RATIO;
-	int x_position = (ofGetWidth() - video_width) / 2;
+	int x_position = (ofGetWidth() - video_width) / 2; //centers the video
 	int y_position = 1.1 * ICON_SIZE;
 	video_.draw(x_position, y_position, video_width, video_height);
 }
 
+//ALL GOOD
 void ofApp::drawPlaybackControls() {
 	gui_->setVisible(true);
 
 	//Draw background
 	int x = (ofGetWidth() - playback_background_.getWidth()) / 2;
 	int y = ofGetHeight() - playback_scrubber_->getHeight() - playback_background_.getHeight();
-	playback_background_.draw(x, y);
-	playback_background_.draw(x, 0);
+	playback_background_.draw(x, y); //bottom bar (play/pause, forward, rewind buttons)
+	playback_background_.draw(x, 0); //top bar (label, back button)
 
-	//Draw label
+									 //Draw label
 	string label = thumbnail_button_links.at(current_video_object_).second.getLabel();
-	int label_width = video_label_.stringWidth(label);
-	x = (ofGetWidth() - label_width) / 2;
+	x = (ofGetWidth() - video_label_.stringWidth(label)) / 2;
 	y = (ICON_SIZE * 1.1 + video_label_.stringHeight(label)) / 2;
 	video_label_.drawString(label, x, y);
 
 	//Draw play/pause
 	x = (ofGetWidth() - ICON_SIZE) / 2;
 	y = ofGetHeight() - playback_scrubber_->getHeight() - ICON_SIZE;
-	if (is_paused_) {
+	if (is_paused_) { //draw the opposite of the current state
 		play_icon_.draw(x, y);
-	} else {
+	}
+	else {
 		pause_icon_.draw(x, y);
 	}
 	play_pause_button_ = ofRectangle(x, y, ICON_SIZE, ICON_SIZE);
 
-	//Draw forward and rewind
+	//Draw rewind
 	rewind_icon_.draw(x - 1.5 * ICON_SIZE, y);
 	rewind_button_ = ofRectangle(x - 1.5 * ICON_SIZE, y, ICON_SIZE, ICON_SIZE);
+
+	//Draw forward
 	forward_icon_.draw(x + 1.5 * ICON_SIZE, y);
 	forward_button_ = ofRectangle(x + 1.5 * ICON_SIZE, y, ICON_SIZE, ICON_SIZE);
 
@@ -135,16 +162,62 @@ void ofApp::drawPlaybackControls() {
 	}
 }
 
+//ALL GOOD
 void ofApp::hidePlaybackControls() {
 	gui_->setVisible(false);
-	while (playback_buttons_.size() > 0) {
-		playback_buttons_.pop_back();
+	//as long as we don't explicitly draw the rest of the controls, they won't show up
+}
+
+//IN PROGRESS
+void ofApp::drawRatingBox() {
+	ofBackground(0, 0, 0);
+	
+	//Draw Background
+	playback_background_.resize(ofGetWidth() / 2, ofGetHeight() / 2); //recycling is healthier for the planet lol (and memory too, I suppose)
+	int x = ofGetWidth() / 4;
+	int y = ofGetHeight() / 4;
+	playback_background_.draw(x, y);
+
+	//Draw Like Button
+	x = (ofGetWidth() - 2 * like_icon_.getWidth()) / 3;
+	y = y + playback_background_.getHeight() - like_icon_.getHeight();
+	like_icon_.draw(x, y);
+	like_button_ = ofRectangle(x, y, like_icon_.getWidth(), like_icon_.getHeight());
+
+	//Draw Dislike Button
+	x = (2 * (ofGetWidth() - 2 * like_icon_.getWidth())) / 3;
+	like_icon_.draw(x, y);
+	like_button_ = ofRectangle(x, y, like_icon_.getWidth(), like_icon_.getHeight());
+
+	//Add to array, if not already in there
+	if (playback_buttons_.size() != 2) {
+		while (playback_buttons_.size() > 0) {
+			playback_buttons_.pop_back();
+		}
+
+		if (playback_buttons_.size() <= 0) {
+			rating_buttons_.push_back(like_button_);
+			rating_buttons_.push_back(dislike_button_);
+		}
+		else {
+			rating_buttons_[0] = like_button_;
+			rating_buttons_[1] = dislike_button_;
+		}
 	}
 }
 
-//--------------------------------------------------------------
-void ofApp::keyPressed(int key){
-	if (current_state_ == WATCHING_VIDEO) {
+//ALL GOOD
+void ofApp::drawClosingScreen() {
+	ofShowCursor();
+	drawMenuScreen();
+	current_state_ = MENU_SCREEN;
+}
+
+//OPENFRAMEWORKS ACTIONS
+
+//ALL GOOD
+void ofApp::keyPressed(int key) {
+	if (current_state_ == WATCHING_VIDEO || current_state_ == USING_PLAYBACK_CONTROLS) {
 		switch (key) {
 		case 'k':
 			TogglePause();
@@ -159,7 +232,7 @@ void ofApp::keyPressed(int key){
 			Rewind();
 			break;
 		case OF_KEY_BACKSPACE:
-			CloseVideo(thumbnail_button_links.at(current_video_object_).second);
+			current_state_ = CLOSING_VIDEO;
 			break;
 		default:
 			break;
@@ -167,24 +240,14 @@ void ofApp::keyPressed(int key){
 	}
 }
 
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y ){
+//ALL GOOD
+void ofApp::mouseMoved(int x, int y) {
 	last_mouse_usage_ = ofGetElapsedTimeMillis();
 }
 
-//--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button) {
 	if (current_state_ == MENU_SCREEN) {
+		//Load the thumbnail that was clicked, if any were clicked
 		for (auto pair : thumbnail_button_links) {
 			auto image = pair.first;
 			if (x > image.x && x < (image.x + image.width) && y > image.y &&  y < (image.y + image.height)) {
@@ -194,10 +257,8 @@ void ofApp::mousePressed(int x, int y, int button) {
 			}
 		}
 	} else if (current_state_ == WATCHING_VIDEO) {
-		//will prevent mouse clicks not on slider from triggering pause
-		if (ofGetElapsedTimeMillis() - last_mouse_usage_ > 2500) {
-			TogglePause();
-		} else { //playback controls are being shown
+		TogglePause();
+	} else if (current_state_ == USING_PLAYBACK_CONTROLS) {
 			if (y >= ofGetHeight() - playback_scrubber_->getHeight()) { //if we are operating on the playback slider
 				playback_scrubber_->onSliderEvent(this, &ofApp::onSliderEvent);
 			} else if ((y > 1.1 * ICON_SIZE && y < ofGetHeight() - (1.1 * ICON_SIZE) - (playback_scrubber_->getHeight()))) { //on smaller video
@@ -218,7 +279,7 @@ void ofApp::mousePressed(int x, int y, int button) {
 							Rewind();
 							break;
 						case 3:
-							CloseVideo(thumbnail_button_links.at(current_video_object_).second);
+							current_state_ = CLOSING_VIDEO;
 							break;
 						default:
 							break;
@@ -226,81 +287,89 @@ void ofApp::mousePressed(int x, int y, int button) {
 					}
 				}
 			}
+	} else if (current_state_ == RATING_VIDEO) {
+		ofRectangle button;
+		for (int i = 0; i < rating_buttons_.size(); i++) {
+			button = playback_buttons_.at(i);
+			if (x > button.x && x < (button.x + button.width) && y > button.y &&  y < (button.y + button.height)) {
+				switch (i) {
+				case 0:
+					thumbnail_button_links.at(current_video_object_).second.setRating(1); //using at because it won't create one if it doesn't exist
+					break;
+				case 1:
+					thumbnail_button_links.at(current_video_object_).second.setRating(0);
+					break;
+				default:
+					break;
+				}
+			}
 		}
 	}
 }
 
+//ALL GOOD
 void ofApp::onSliderEvent(ofxDatGuiSliderEvent e) {
 	video_.setPosition(e.value);
 }
 
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y){
+//ALL GOOD
+void ofApp::mouseExited(int x, int y) {
 	last_mouse_usage_ = ofGetElapsedTimeMillis() - 2500; //once the mouse leaves, trigger the hiding of playback controls
 }
 
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h){
+//WORK IN PROGRESS -- ACCEPTABLE FOR NOW
+void ofApp::windowResized(int w, int h) {
 	playback_scrubber_->setWidth(ofGetWidth(), 0);
 }
 
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg){
 
-}
-
-//--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){ 
-
-}
-
-
+//VIDEO PLAYING CONTROLS -- ALL GOOD
 void ofApp::TogglePause() {
 	float position = video_.getPosition();
 	is_paused_ = !is_paused_;
 	video_.setPaused(is_paused_);
-	last_mouse_usage_ = ofGetElapsedTimeMillis();
+	
+	if (current_state_ == USING_PLAYBACK_CONTROLS) {
+		last_mouse_usage_ = ofGetElapsedTimeMillis();
+	}
 }
 
 void ofApp::Forward() {
 	float position = video_.getPosition();
 	position = (position + 0.01 > 1) ? 1 : position + 0.02; //will cap position to 1
 	video_.setPosition(position);
-	last_mouse_usage_ = ofGetElapsedTimeMillis();
+
+	if (current_state_ == USING_PLAYBACK_CONTROLS) {
+		last_mouse_usage_ = ofGetElapsedTimeMillis();
+	}
 }
 
 void ofApp::Rewind() {
 	float position = video_.getPosition();
 	position = (position - 0.01 < 0) ? 0 : position - 0.02; //will floor position at 0
 	video_.setPosition(position);
-	last_mouse_usage_ = ofGetElapsedTimeMillis();
+
+	if (current_state_ == USING_PLAYBACK_CONTROLS) {
+		last_mouse_usage_ = ofGetElapsedTimeMillis();
+	}
 }
 
 
+//LOADING AND CLOSING -- ALL GOOD
 void ofApp::LoadVideo(VideoObject &video) {
+	current_state_ = LOADING_VIDEO; //here in case I want to implement a loading screen
 	string filepath = video.getVideoFilepath();
-
-	for (int i = 0; i < video_objects_.size(); i++) {
-		if (video_objects_[i].getVideoFilepath() == filepath) {
+	for (int i = 0; i < thumbnail_button_links.size(); i++) {
+		if (thumbnail_button_links[i].second.getVideoFilepath() == filepath) {
 			current_video_object_ = i;
 			break;
 		}
 	}
-
 	video_.load(filepath);
 	video_.play();
 	video_.setPosition(video.getVideoPlaybackPosition());
 	video_.update();
+
 	is_paused_ = false;
 	current_state_ = WATCHING_VIDEO;
 }
@@ -308,20 +377,16 @@ void ofApp::LoadVideo(VideoObject &video) {
 void ofApp::CloseVideo(VideoObject &video) {
 	current_state_ = CLOSING_VIDEO;
 	video.setPlaybackPosition(video_.getPosition());
+
 	if (video_.getPosition() > 0.99) {
 		video.setWatched(true);
-		//prompt rating for finished video
 		video.setPlaybackPosition(0);
 	}
 	video_.stop();
-	gui_->setVisible(false);
 
-	ofShowCursor(); 
-	drawMenuScreen();
-	current_state_ = MENU_SCREEN;
 }
 
-
+//INITIALIZATION
 //InitializeThumbnails() referenced from: https://forum.openframeworks.cc/t/technique-to-generate-thumbnails-from-a-lot-of-videos/14804/3
 void ofApp::InitializeThumbnails() {
 	std::string videosFolder = "movies";
@@ -385,8 +450,17 @@ void ofApp::InitializeIcons() {
 	float ratio = logo_.getHeight() / logo_.getWidth();
 	int width = (ofGetWidth() * 5) / 10;
 	logo_.resize(width, ratio * width);
+
+	//Like and Dislike Icons
+	like_icon_ = ofImage("icons/like.png");
+	dislike_icon_ = ofImage("icons/dislike.png");
+
+	like_icon_.resize(ICON_SIZE, ICON_SIZE);
+	dislike_icon_.resize(ICON_SIZE, ICON_SIZE);
 }
 
+
+//DISPLAY IMAGES ON MENU SCREEN
 void ofApp::DisplayThumbnails() {
 	std::string thumbs_folder = "thumbs";
 	ofDirectory dir;

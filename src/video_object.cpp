@@ -27,6 +27,10 @@ double VideoObject::getVideoPlaybackPosition() {
 	return playback_position_;
 }
 
+int VideoObject::getRating() {
+	return rating_;
+}
+
 void VideoObject::setLabel(std::string label) {
 	label_ = label;
 }
