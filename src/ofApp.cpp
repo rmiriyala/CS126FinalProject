@@ -244,7 +244,7 @@ void ofApp::mouseEntered(int x, int y){
 
 //--------------------------------------------------------------
 void ofApp::mouseExited(int x, int y){
-
+	last_mouse_usage_ = ofGetElapsedTimeMillis() - 2500; //once the mouse leaves, trigger the hiding of playback controls
 }
 
 //--------------------------------------------------------------
@@ -341,9 +341,9 @@ void ofApp::InitializeThumbnails() {
 			//for every video, skim to the middle
 			tmp.loadMovie(videoPath);
 			tmp.play();
-			tmp.setPosition(0.1);
+			tmp.setPosition(0.25);
+			tmp.setPaused(true);
 			tmp.update();
-			tmp.stop();
 			
 
 			//create thumbnail from frame in middle of video
@@ -384,6 +384,13 @@ void ofApp::DisplayThumbnails() {
 	int row = 0;
 
 	ofImage img;
+
+	int unit = ofGetWidth() / 31;
+	int image_width = 4 * unit; //scales up width & height maintaining 16:9 ratio
+	int image_height = 2.25 * unit;
+	int horizontal_padding = unit;
+	int vertical_padding = unit;
+
 	for (int i = 0; i < dir.size(); i++) {
 		string image_path = dir.getPath(i);
 		ofFile file;
@@ -392,24 +399,8 @@ void ofApp::DisplayThumbnails() {
 		if (file.exists()) {
 			img.load("thumbs/" + ofFilePath::getBaseName(image_path) + ".jpg");
 
-			//when we get to the last column move to the next row
-			if (column >= 6) {
-				row++;
-				column = 0;
-			}
-
-			int unit = ofGetWidth() / 30;
-			int image_width = 4 * unit; //scales up width & height maintaining 16:9 ratio
-			int image_height = 2.25 * unit;
-			int horizontal_padding = unit;
-			int vertical_padding = unit;
-			
-			int x = horizontal_padding + column * (image_width + horizontal_padding);
-			int y = vertical_padding + row * (image_height + vertical_padding);
-
 			//Add video objects to our array if they aren't already there
 			VideoObject vid = VideoObject(ofFilePath::getBaseName(image_path));
-
 			bool contains_video = false;
 			for (auto video : video_objects_) {
 				if (video.getVideoFilepath() == "movies/" + ofFilePath::getBaseName(image_path) + ".mp4") {
@@ -420,7 +411,17 @@ void ofApp::DisplayThumbnails() {
 				video_objects_.push_back(vid);
 			}
 
-			//draw image thumbnail and label
+			//perform check to see if we have reached the end of a row
+			if (column >= 6) {
+				row++;
+				column = 0;
+			}
+			
+			//calculate next x and y
+			int x = horizontal_padding + column * (image_width + horizontal_padding);
+			int y = vertical_padding + row * (image_height + vertical_padding);
+
+			//draw image thumbnail and label using x and y coordinates
 			img.draw(x, y, image_width, image_height);
 
 			string label = ofFilePath::getBaseName(image_path);
