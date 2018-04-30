@@ -26,7 +26,7 @@ Downloaded and added [ofxDatGUI](https://braitsch.github.io/ofxDatGui/index.html
 
 #### (4/27) Added Video Scrubber
 
-Created video scrubber with the ofDatGUI library's slider tool; set the code up in a way that allows the playback slider to be updated by any change in the video's playback position including the jump-position 'j' and 'k' keys.  Also avoids the issue of toggling pause, which used to be the standard mouse-click action.
+Created video scrubber with the ofxDatGUI library's slider tool; set the code up in a way that allows the playback slider to be updated by any change in the video's playback position including the jump-position 'j' and 'k' keys.  Also avoids the issue of toggling pause, which used to be the standard mouse-click action.
 
 #### (4/27) Update GUI for Resized Window and Beginning to Add File System
 
