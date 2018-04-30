@@ -37,6 +37,8 @@ class ofApp : public ofBaseApp{
 		int current_video_object_;
 
 		//Playback Control Elements
+		ofTrueTypeFont video_label_;
+
 		ofImage playback_background_;
 		ofImage play_icon_;
 		ofImage pause_icon_;

@@ -19,6 +19,9 @@ void ofApp::setup(){
 	playback_scrubber_->setWidth(ofGetWidth(), 0);
 	playback_scrubber_->setBorderVisible(false);
 
+	//Setup Labels
+	video_label_.load(OF_TTF_SERIF, 40);
+
 	//Hide GUI
 	gui_->setVisible(false);
 }
@@ -78,6 +81,13 @@ void ofApp::drawPlaybackControls() {
 	int y = ofGetHeight() - playback_scrubber_->getHeight() - playback_background_.getHeight();
 	playback_background_.draw(x, y);
 	playback_background_.draw(x, 0);
+
+	//Draw label
+	string label = thumbnail_button_links.at(current_video_object_).second.getLabel();
+	int label_width = video_label_.stringWidth(label);
+	x = (ofGetWidth() - label_width) / 2;
+	y = (ICON_SIZE * 1.1 + video_label_.stringHeight(label)) / 2;
+	video_label_.drawString(label, x, y);
 
 	//Draw play/pause
 	x = (ofGetWidth() - ICON_SIZE) / 2;
@@ -306,6 +316,7 @@ void ofApp::CloseVideo(VideoObject &video) {
 	video_.stop();
 	gui_->setVisible(false);
 
+	ofShowCursor();
 	drawMenuScreen();
 	current_state_ = MENU_SCREEN;
 }
@@ -412,16 +423,17 @@ void ofApp::DisplayThumbnails() {
 				video_objects_.push_back(vid);
 			}
 
-			//place a rectangle behind each image since we can use ofRectangle.intersects() and rectangles hold position and dimensions
-			ofRectangle rect = ofRectangle(x, y, image_width, image_height);
-			thumbnail_button_links.push_back(std::make_pair(rect, vid));
-
 			//draw image thumbnail and label
 			img.draw(x, y, image_width, image_height);
 
 			string label = ofFilePath::getBaseName(image_path);
 			std::replace(label.begin(), label.end(), '_', ' ');
+			vid.setLabel(label);
 			ofDrawBitmapString(label, x + (image_width - 8 * label.size()) / 2, y + image_height + (vertical_padding / 6));
+
+			//place a rectangle behind each image since we can use ofRectangle.intersects() and rectangles hold position and dimensions
+			ofRectangle rect = ofRectangle(x, y, image_width, image_height);
+			thumbnail_button_links.push_back(std::make_pair(rect, vid));
 
 			//move to next column
 			column++;

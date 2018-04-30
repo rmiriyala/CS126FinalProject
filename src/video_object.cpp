@@ -19,8 +19,16 @@ std::string VideoObject::getVideoFilepath() {
     return video_filepath_;
 }
 
+std::string VideoObject::getLabel() {
+	return label_;
+}
+
 double VideoObject::getVideoPlaybackPosition() {
 	return playback_position_;
+}
+
+void VideoObject::setLabel(std::string label) {
+	label_ = label;
 }
 
 void VideoObject::setWatched(bool watched) {
