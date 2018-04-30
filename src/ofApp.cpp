@@ -54,6 +54,7 @@ void ofApp::draw() {
 }
 
 void ofApp::drawMenuScreen() {
+	ofBackground(50, 50, 50);
 	DisplayLogo();
 	DisplayThumbnails();
 }
@@ -67,9 +68,10 @@ void ofApp::drawWatchingVideoFull() {
 }
 
 void ofApp::drawWatchingVideoSmall() {
-	int video_width = ofGetWidth();
+	ofBackground(0, 0, 0);
 	int video_height = ofGetHeight() - (2.2 * ICON_SIZE) - (playback_scrubber_->getHeight());
-	int x_position = 0;
+	int video_width = video_height * DISPLAY_RATIO;
+	int x_position = (ofGetWidth() - video_width) / 2;
 	int y_position = 1.1 * ICON_SIZE;
 	video_.draw(x_position, y_position, video_width, video_height);
 }
@@ -362,6 +364,10 @@ void ofApp::InitializeThumbnails() {
 
 void ofApp::InitializeIcons() {
 	//Playback control icons
+	playback_background_ = ofImage("icons/background.png");
+	playback_background_.setColor(ofColor(50, 50, 50));
+	playback_background_.resize(ofGetWidth(), ICON_SIZE * 1.1);
+
 	play_icon_ = ofImage("icons/play.png");
 	pause_icon_ = ofImage("icons/pause.png");
 	forward_icon_ = ofImage("icons/forward.png");

@@ -95,4 +95,5 @@ class ofApp : public ofBaseApp{
 		void DisplayLogo();
 
 		const int ICON_SIZE = 100;
+		const float DISPLAY_RATIO = 2;
 };
