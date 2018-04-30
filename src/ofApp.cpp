@@ -3,32 +3,34 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 	ofBackground(50, 50, 50);
-	//ofSetVerticalSync(true);
 
 	InitializeThumbnails();
-	std::cout << "done" << std::endl;
+	std::cout << "loading thumbnails...done" << std::endl;
+
+	InitializeIcons();
+	std::cout << "loading icons...done" << std::endl;
+
 
 	//Setup GUI
 	gui_ = new ofxDatGui(ofxDatGuiAnchor::BOTTOM_LEFT);
+
+	//Setup Playback Scrubber
 	playback_scrubber_ = gui_->addSlider("Playback Slider", 0, 1, 0);
 	playback_scrubber_->setWidth(ofGetWidth(), 0);
+	playback_scrubber_->setBorderVisible(false);
+
+	//Hide GUI
 	gui_->setVisible(false);
 }
 
 //--------------------------------------------------------------
-void ofApp::update(){
-
+void ofApp::update() {
 	if (current_state_ == MENU_SCREEN) {
 		//do nothing
 	} else if (current_state_ == WATCHING_VIDEO) {
-		if (ofGetElapsedTimeMillis() - last_mouse_usage_ > 3000) {
-			ofHideCursor();
-		}
-
 		video_.update();
 		playback_scrubber_->setValue(video_.getPosition());
 	}
-
 }
 
 //--------------------------------------------------------------
@@ -36,7 +38,15 @@ void ofApp::draw() {
 	if (current_state_ == MENU_SCREEN) {
 		drawMenuScreen();
 	} else if (current_state_ == WATCHING_VIDEO) {
-		drawWatchingVideo();
+		if (ofGetElapsedTimeMillis() - last_mouse_usage_ > 2500) {
+			ofHideCursor();
+			hidePlaybackControls();
+			drawWatchingVideoFull();
+		} else {
+			ofShowCursor();
+			drawWatchingVideoSmall();
+			drawPlaybackControls();
+		}
 	}
 }
 
@@ -44,18 +54,82 @@ void ofApp::drawMenuScreen() {
 	DisplayThumbnails();
 }
 
-void ofApp::drawWatchingVideo() {
+void ofApp::drawWatchingVideoFull() {
 	int video_width = ofGetWidth();
-	int video_height = ofGetHeight() - playback_scrubber_->getHeight();
+	int video_height = ofGetHeight();
 	int x_position = 0;
 	int y_position = 0;
 	video_.draw(x_position, y_position, video_width, video_height);
 }
 
+void ofApp::drawWatchingVideoSmall() {
+	int video_width = ofGetWidth();
+	int video_height = ofGetHeight() - (2.2 * ICON_SIZE) - (playback_scrubber_->getHeight());
+	int x_position = 0;
+	int y_position = 1.1 * ICON_SIZE;
+	video_.draw(x_position, y_position, video_width, video_height);
+}
+
+void ofApp::drawPlaybackControls() {
+	gui_->setVisible(true);
+
+	//Draw background
+	int x = (ofGetWidth() - playback_background_.getWidth()) / 2;
+	int y = ofGetHeight() - playback_scrubber_->getHeight() - playback_background_.getHeight();
+	playback_background_.draw(x, y);
+	playback_background_.draw(x, 0);
+
+	//Draw play/pause
+	x = (ofGetWidth() - ICON_SIZE) / 2;
+	y = ofGetHeight() - playback_scrubber_->getHeight() - ICON_SIZE;
+	if (is_paused_) {
+		play_icon_.draw(x, y);
+	} else {
+		pause_icon_.draw(x, y);
+	}
+	play_pause_button_ = ofRectangle(x, y, ICON_SIZE, ICON_SIZE);
+
+	//Draw forward and rewind
+	rewind_icon_.draw(x - 1.5 * ICON_SIZE, y);
+	rewind_button_ = ofRectangle(x - 1.5 * ICON_SIZE, y, ICON_SIZE, ICON_SIZE);
+	forward_icon_.draw(x + 1.5 * ICON_SIZE, y);
+	forward_button_ = ofRectangle(x + 1.5 * ICON_SIZE, y, ICON_SIZE, ICON_SIZE);
+
+	//Draw back button
+	back_icon_.draw(10, 0);
+	back_button_ = ofRectangle(10, 0, ICON_SIZE, ICON_SIZE);
+
+	//Add to array, if not already in there
+	if (playback_buttons_.size() != 4) {
+		while (playback_buttons_.size() > 0) {
+			playback_buttons_.pop_back();
+		}
+
+		if (playback_buttons_.size() <= 0) {
+			playback_buttons_.push_back(play_pause_button_);
+			playback_buttons_.push_back(forward_button_);
+			playback_buttons_.push_back(rewind_button_);
+			playback_buttons_.push_back(back_button_);
+		}
+		else {
+			playback_buttons_[0] = play_pause_button_;
+			playback_buttons_[1] = forward_button_;
+			playback_buttons_[2] = rewind_button_;
+			playback_buttons_[4] = back_button_;
+		}
+	}
+}
+
+void ofApp::hidePlaybackControls() {
+	gui_->setVisible(false);
+	while (playback_buttons_.size() > 0) {
+		playback_buttons_.pop_back();
+	}
+}
+
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
 	if (current_state_ == WATCHING_VIDEO) {
-		float position = video_.getPosition();
 		switch (key) {
 		case 'k':
 			TogglePause();
@@ -64,16 +138,13 @@ void ofApp::keyPressed(int key){
 			TogglePause();
 			break;
 		case 'l':
-			position = (position + 0.01 > 1) ? 1 : position + 0.02; //will cap position to 1
-			video_.setPosition(position);
+			Forward();
 			break;
 		case 'j':
-			position = (position - 0.01 < 0) ? 0 : position - 0.02; //will floor position at 0
-			video_.setPosition(position);
+			Rewind();
 			break;
 		case OF_KEY_BACKSPACE:
 			CloseVideo(thumbnail_button_links.at(current_video_object_).second);
-			std::cout << "After saving: " << thumbnail_button_links.at(current_video_object_).second.getVideoPlaybackPosition() << std::endl;
 			break;
 		default:
 			break;
@@ -89,7 +160,6 @@ void ofApp::keyReleased(int key){
 //--------------------------------------------------------------
 void ofApp::mouseMoved(int x, int y ){
 	last_mouse_usage_ = ofGetElapsedTimeMillis();
-	ofShowCursor();
 }
 
 //--------------------------------------------------------------
@@ -104,25 +174,50 @@ void ofApp::mousePressed(int x, int y, int button) {
 			auto image = pair.first;
 			if (x > image.x && x < (image.x + image.width) && y > image.y &&  y < (image.y + image.height)) {
 				current_state_ = LOADING_VIDEO;
-				std::cout << "Load at mouse press: " << pair.second.getVideoPlaybackPosition() << std::endl;
 				LoadVideo(pair.second);
 				break;
 			}
 		}
 	} else if (current_state_ == WATCHING_VIDEO) {
 		//will prevent mouse clicks not on slider from triggering pause
-		if (y >= ofGetHeight() - playback_scrubber_->getHeight()) {
-			playback_scrubber_->onSliderEvent(this, &ofApp::onSliderEvent);
-		}
-		else {
+		if (ofGetElapsedTimeMillis() - last_mouse_usage_ > 2500) {
+			std::cout << "TIME IS GREATER" << std::endl;
 			TogglePause();
+		} else { //playback controls are being shown
+			if (y >= ofGetHeight() - playback_scrubber_->getHeight()) { //if we are operating on the playback slider
+				playback_scrubber_->onSliderEvent(this, &ofApp::onSliderEvent);
+			} else if ((y > 1.1 * ICON_SIZE && y < ofGetHeight() - (1.1 * ICON_SIZE) - (playback_scrubber_->getHeight()))) { //on smaller video
+				TogglePause();
+			} else { //will look to see if the click intersects one of the buttons
+				ofRectangle button;
+				for (int i = 0; i < playback_buttons_.size(); i++) {
+					button = playback_buttons_.at(i);
+					if (x > button.x && x < (button.x + button.width) && y > button.y &&  y < (button.y + button.height)) {
+						switch (i) {
+						case 0:
+							TogglePause();
+							break;
+						case 1:
+							Forward();
+							break;
+						case 2:
+							Rewind();
+							break;
+						case 3:
+							CloseVideo(thumbnail_button_links.at(current_video_object_).second);
+							break;
+						default:
+							break;
+						}
+					}
+				}
+			}
 		}
 	}
 }
 
 void ofApp::onSliderEvent(ofxDatGuiSliderEvent e) {
 	video_.setPosition(e.value);
-	//cout << "slider = " << e.value << endl; //debug statement
 }
 
 //--------------------------------------------------------------
@@ -155,10 +250,28 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 
 }
 
+
 void ofApp::TogglePause() {
+	float position = video_.getPosition();
 	is_paused_ = !is_paused_;
 	video_.setPaused(is_paused_);
+	last_mouse_usage_ = ofGetElapsedTimeMillis();
 }
+
+void ofApp::Forward() {
+	float position = video_.getPosition();
+	position = (position + 0.01 > 1) ? 1 : position + 0.02; //will cap position to 1
+	video_.setPosition(position);
+	last_mouse_usage_ = ofGetElapsedTimeMillis();
+}
+
+void ofApp::Rewind() {
+	float position = video_.getPosition();
+	position = (position - 0.01 < 0) ? 0 : position - 0.02; //will floor position at 0
+	video_.setPosition(position);
+	last_mouse_usage_ = ofGetElapsedTimeMillis();
+}
+
 
 void ofApp::LoadVideo(VideoObject &video) {
 	string filepath = video.getVideoFilepath();
@@ -170,7 +283,6 @@ void ofApp::LoadVideo(VideoObject &video) {
 		}
 	}
 
-	gui_->setVisible(true);
 	video_.load(filepath);
 	video_.play();
 	std::cout << "Loading video at: " << video.getVideoPlaybackPosition() << std::endl;
@@ -198,7 +310,8 @@ void ofApp::CloseVideo(VideoObject &video) {
 	current_state_ = MENU_SCREEN;
 }
 
-//Referenced from: https://forum.openframeworks.cc/t/technique-to-generate-thumbnails-from-a-lot-of-videos/14804/3
+
+//InitializeThumbnails() referenced from: https://forum.openframeworks.cc/t/technique-to-generate-thumbnails-from-a-lot-of-videos/14804/3
 void ofApp::InitializeThumbnails() {
 	std::string videosFolder = "movies";
 	ofDirectory dir;
@@ -237,6 +350,20 @@ void ofApp::InitializeThumbnails() {
 			std::cout << i << std::endl;
 		}
 	}
+}
+
+void ofApp::InitializeIcons() {
+	play_icon_ = ofImage("icons/play.png");
+	pause_icon_ = ofImage("icons/pause.png");
+	forward_icon_ = ofImage("icons/forward.png");
+	rewind_icon_ = ofImage("icons/rewind.png");
+	back_icon_ = ofImage("icons/back.png");
+
+	play_icon_.resize(ICON_SIZE, ICON_SIZE);
+	pause_icon_.resize(ICON_SIZE, ICON_SIZE);
+	forward_icon_.resize(ICON_SIZE, ICON_SIZE);
+	rewind_icon_.resize(ICON_SIZE, ICON_SIZE);
+	back_icon_.resize(ICON_SIZE, ICON_SIZE);
 }
 
 void ofApp::DisplayThumbnails() {

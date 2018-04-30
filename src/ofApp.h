@@ -28,11 +28,27 @@ class ofApp : public ofBaseApp{
 		vector<pair<ofRectangle, VideoObject>> thumbnail_button_links;
 		vector<VideoObject> video_objects_;
 
-		//Video Player Variables
+		//GUI Elements
 		ofxDatGui* gui_;
 		ofxDatGuiSlider* playback_scrubber_;
+
+		//Video Player Elements
 		ofVideoPlayer video_;
 		int current_video_object_;
+
+		//Playback Control Elements
+		ofImage playback_background_;
+		ofImage play_icon_;
+		ofImage pause_icon_;
+		ofImage forward_icon_;
+		ofImage rewind_icon_;
+		ofImage back_icon_;
+
+		ofRectangle play_pause_button_;
+		ofRectangle forward_button_;
+		ofRectangle rewind_button_;
+		ofRectangle back_button_;
+		vector<ofRectangle> playback_buttons_;
 
 		std::size_t last_mouse_usage_;
 		bool is_paused_;
@@ -43,7 +59,10 @@ class ofApp : public ofBaseApp{
 		void draw();
 
 		void drawMenuScreen();
-		void drawWatchingVideo();
+		void drawWatchingVideoFull();
+		void drawWatchingVideoSmall();
+		void drawPlaybackControls();
+		void hidePlaybackControls();
 
 		void keyPressed(int key);
 		void keyReleased(int key);
@@ -60,8 +79,15 @@ class ofApp : public ofBaseApp{
 		
 
 		void TogglePause(); //toggles the pause/play functionality in video
+		void Forward();
+		void Rewind();
+
 		void LoadVideo(VideoObject &video);
 		void CloseVideo(VideoObject &video);
+
 		void InitializeThumbnails();
+		void InitializeIcons();
 		void DisplayThumbnails();
+
+		const int ICON_SIZE = 100;
 };
