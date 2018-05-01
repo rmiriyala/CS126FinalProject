@@ -4,6 +4,9 @@
 void ofApp::setup(){
 	ofBackground(50, 50, 50);
 
+	Load("Rahul");
+	std::cout << "loading user data...done" << std::endl;
+
 	InitializeThumbnails();
 	std::cout << "loading thumbnails...done" << std::endl;
 
@@ -413,7 +416,64 @@ void ofApp::CloseVideo(VideoObject &video) {
 		video.setPlaybackPosition(0);
 	}
 	video_.stop();
+	Save("Rahul");
+}
 
+//Will save all created video objects from thumbnail button links
+bool ofApp::Save(string username) {
+	std::ofstream save_file("../data/" + username + "-data.txt");
+	if (!save_file) {
+		return false;
+	}
+
+	std::cout << thumbnail_button_links.size() << std::endl;
+	for (auto pair : thumbnail_button_links) {
+		VideoObject video_object = pair.second;
+		save_file << "! " << video_object.getVideoFilepath() << "\n";
+		save_file << "@ " << video_object.getRating() << " ";
+		save_file << "# " << video_object.isWatched() << " ";
+		save_file << "$ " << video_object.getVideoPlaybackPosition() << " ";
+		save_file << "% " << std::endl;
+	}
+
+	return true;
+}
+
+//Will load all saved video objects to loaded_video_objects
+bool ofApp::Load(string username) {
+	std::ifstream load_file("../data/" + username + "-data.txt");
+	if (!load_file) {
+		return false;
+	}
+
+	string input;
+	VideoObject video;
+	while (load_file >> input) { // NOLINT
+		if (input == "!") {
+			string path;
+			std::getline(load_file, path); //accidentally gets the space following "!"
+			video.setVideoFilepath(path.substr(1));
+		}
+		else if (input == "@") {
+			int rating;
+			load_file >> rating; // NOLINT
+			video.setRating(rating);
+		}
+		else if (input == "#") {
+			bool watched;
+			load_file >> watched; // NOLINT
+			video.setWatched(watched);
+		}
+		else if (input == "$") {
+			double position;
+			load_file >> position;
+			video.setPlaybackPosition(position);
+		}
+		else if (input == "%") {
+			loaded_video_objects_.push_back(video);
+			video = VideoObject();
+		}
+	}
 }
 
 //------------------------------------------------------------------------------------
@@ -497,7 +557,7 @@ void ofApp::InitializeIcons() {
 	dislike_icon_.resize(ICON_SIZE, ICON_SIZE);
 }
 
-//Displays the thumbnails after they have been initialized
+//Displays the thumbnails after they have been initialized, also pilfers from loaded videos if there are any
 void ofApp::DisplayThumbnails() {
 	std::string thumbs_folder = "thumbs";
 	ofDirectory dir;
@@ -525,9 +585,10 @@ void ofApp::DisplayThumbnails() {
 			for (auto video_object : loaded_video_objects_) {
 				//If we have existing data, use it; otherwise, go with standard defaults
 				if (video_object.getVideoFilepath() == vid.getVideoFilepath()) {
-					vid.setLabel(video_object.getLabel());
+					//pilfer data from existing video
 					vid.setRating(video_object.getRating());
 					vid.setWatched(video_object.isWatched());
+					vid.setPlaybackPosition(video_object.getVideoPlaybackPosition());
 				}
 			}
 
@@ -556,7 +617,17 @@ void ofApp::DisplayThumbnails() {
 
 			//place a rectangle behind each image since we can use ofRectangle.intersects() and rectangles hold position and dimensions
 			ofRectangle rect = ofRectangle(x, y, image_width, image_height);
-			thumbnail_button_links.push_back(std::make_pair(rect, vid));
+
+			bool already_contains_vid = false;
+			for (auto pair : thumbnail_button_links) {
+				VideoObject video = pair.second;
+				if (vid.getVideoFilepath() == video.getVideoFilepath()) {
+					already_contains_vid = true;
+				}
+			}
+			if (!already_contains_vid) {
+				thumbnail_button_links.push_back(std::make_pair(rect, vid));
+			}
 
 			//move to next column
 			column++;

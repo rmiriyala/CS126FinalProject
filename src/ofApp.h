@@ -103,6 +103,9 @@ class ofApp : public ofBaseApp{
 		void LoadVideo(VideoObject &video);
 		void CloseVideo(VideoObject &video);
 
+		bool Save(string username);
+		bool Load(string username);
+
 		//Display Helpers
 		void InitializeThumbnails();
 		void InitializeIcons();
