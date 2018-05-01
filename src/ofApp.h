@@ -58,6 +58,8 @@ class ofApp : public ofBaseApp{
 		ofRectangle back_button_;
 
 		//Ratings Elements
+		ofTrueTypeFont rating_instructions_;
+
 		ofImage like_icon_;
 		ofImage dislike_icon_;
 

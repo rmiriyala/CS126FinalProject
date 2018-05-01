@@ -21,6 +21,7 @@ void ofApp::setup(){
 	//Setup Labels
 	video_label_.load(OF_TTF_SANS, 40);
 	menu_label_.load(OF_TTF_SANS, 25);
+	rating_instructions_.load(OF_TTF_SANS, 60);
 
 	//Hide GUIs
 	gui_->setVisible(false);
@@ -189,14 +190,22 @@ void ofApp::drawRatingBox() {
 		int y = ofGetHeight() / 4;
 		rating_box_background_.draw(x, y);
 
+		//Draw Label
+		string label = "Please Rate the Video";
+		int x_pos = x + (rating_box_background_.getWidth() - rating_instructions_.stringWidth(label)) / 2;
+		int y_pos = y + 2*rating_instructions_.getSize();
+		rating_instructions_.drawString(label, x_pos, y_pos);
+
 		//Draw Like Button
-		x = (ofGetWidth() - 2 * like_icon_.getWidth()) / 3;
-		y = y + rating_box_background_.getHeight() - like_icon_.getHeight();
+		like_icon_.resize(rating_box_background_.getHeight() / 2, rating_box_background_.getHeight() / 2);
+		x = x + ((rating_box_background_.getWidth()- 2 * like_icon_.getWidth()) / 3);
+		y = y + rating_box_background_.getHeight() - 1.2* like_icon_.getHeight();
 		like_icon_.draw(x, y);
 		like_button_ = ofRectangle(x, y, like_icon_.getWidth(), like_icon_.getHeight());
 
 		//Draw Dislike Button
-		x = (2 * (ofGetWidth() - 2 * like_icon_.getWidth())) / 3;
+		dislike_icon_.resize(rating_box_background_.getHeight() / 2, rating_box_background_.getHeight() / 2);
+		x = x + ((rating_box_background_.getWidth() - 2*like_icon_.getWidth()) / 3) + like_icon_.getWidth();
 		dislike_icon_.draw(x, y);
 		dislike_button_ = ofRectangle(x, y, like_icon_.getWidth(), like_icon_.getHeight());
 
