@@ -26,23 +26,22 @@ class ofApp : public ofBaseApp{
 		//State Control
 		AppState current_state_ = MENU_SCREEN;
 
-		//Menu Elements
+		//Objects
 		vector<pair<ofRectangle, VideoObject>> thumbnail_button_links;
-		vector<VideoObject> video_objects_;
-		ofImage logo_;
-
+		vector<VideoObject> loaded_video_objects_;
+		ofVideoPlayer video_;
+		
 		//GUI Elements
 		ofxDatGui* gui_;
 		ofxDatGuiSlider* playback_scrubber_;
 
-		//Video Player Elements
-		ofVideoPlayer video_;
-		int current_video_object_;
-
-		//Playback Control Elements
 		ofTrueTypeFont video_label_;
 		ofTrueTypeFont menu_label_;
+		ofTrueTypeFont rating_instructions_;
 
+		ofImage like_icon_;
+		ofImage dislike_icon_;
+		ofImage logo_;
 		ofImage playback_background_;
 		ofImage rating_box_background_;
 		ofImage play_icon_;
@@ -51,23 +50,18 @@ class ofApp : public ofBaseApp{
 		ofImage rewind_icon_;
 		ofImage back_icon_;
 
-		vector<ofRectangle> playback_buttons_;
 		ofRectangle play_pause_button_;
 		ofRectangle forward_button_;
 		ofRectangle rewind_button_;
 		ofRectangle back_button_;
-
-		//Ratings Elements
-		ofTrueTypeFont rating_instructions_;
-
-		ofImage like_icon_;
-		ofImage dislike_icon_;
-
-		vector<ofRectangle> rating_buttons_;
 		ofRectangle like_button_;
 		ofRectangle dislike_button_;
 
-		//Playback Hiding Variables
+		vector<ofRectangle> playback_buttons_;
+		vector<ofRectangle> rating_buttons_;
+
+		//Tracking Variables
+		int current_video_object_;
 		std::size_t last_mouse_usage_;
 		bool is_paused_;
 
@@ -81,38 +75,41 @@ class ofApp : public ofBaseApp{
 		void drawVideoSmall();
 		void drawPlaybackControls();
 		void hidePlaybackControls();
-		void hideRatingBox();
 		void drawClosingScreen();
 		void drawRatingBox();
 
 		void keyPressed(int key);
-		//void keyReleased(int key);
 		void mouseMoved(int x, int y );
-		//void mouseDragged(int x, int y, int button);
 		void mousePressed(int x, int y, int button);
 		void onSliderEvent(ofxDatGuiSliderEvent e);
-		//void mouseReleased(int x, int y, int button);
-		//void mouseEntered(int x, int y);
 		void mouseExited(int x, int y);
 		void windowResized(int w, int h);
+
+		/*Unused OpenFrameworks Commands*/
+		//void keyReleased(int key);
+		//void mouseDragged(int x, int y, int button);
+		//void mouseReleased(int x, int y, int button);
+		//void mouseEntered(int x, int y);
 		//void dragEvent(ofDragInfo dragInfo);
 		//void gotMessage(ofMessage msg);
 		
 
-		void TogglePause(); //toggles the pause/play functionality in video
+		//Playback Controls
+		void TogglePause();
 		void Forward();
 		void Rewind();
 
+		//Object Control
 		void LoadVideo(VideoObject &video);
 		void CloseVideo(VideoObject &video);
-		void GetUserRating(VideoObject &video);
 
-
+		//Display Helpers
 		void InitializeThumbnails();
 		void InitializeIcons();
 		void DisplayThumbnails();
 		void DisplayLogo();
 
+		//Constants
 		const int ICON_SIZE = 100;
 		const float DISPLAY_RATIO = 2;
 };

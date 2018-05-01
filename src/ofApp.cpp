@@ -1,6 +1,6 @@
 #include "ofApp.h"
 
-//--------------------------------------------------------------
+
 void ofApp::setup(){
 	ofBackground(50, 50, 50);
 
@@ -27,7 +27,6 @@ void ofApp::setup(){
 	gui_->setVisible(false);
 }
 
-//--------------------------------------------------------------
 void ofApp::update() {
 	if (current_state_ == MENU_SCREEN) {
 		//do nothing
@@ -57,7 +56,6 @@ void ofApp::update() {
 	}
 }
 
-//--------------------------------------------------------------
 void ofApp::draw() {
 	if (current_state_ == MENU_SCREEN) {
 		drawMenuScreen();
@@ -83,14 +81,16 @@ void ofApp::draw() {
 	}
 }
 
-//ALL GOOD
+//------------------------------------------------------------------------------------
+
+//Draws the Netflix logo and the thumbnails for the videos
 void ofApp::drawMenuScreen() {
 	ofBackground(50, 50, 50);
 	DisplayLogo();
 	DisplayThumbnails();
 }
 
-//ALL GOOD
+//Draws a fullscreen version of the video
 void ofApp::drawVideoFull() {
 	int video_width = ofGetWidth();
 	int video_height = ofGetHeight();
@@ -99,7 +99,7 @@ void ofApp::drawVideoFull() {
 	video_.draw(x_position, y_position, video_width, video_height);
 }
 
-//ALL GOOD
+//Resizes the video, maintaining the same dimensions, but allowing the playback controls to appear
 void ofApp::drawVideoSmall() {
 	ofBackground(0, 0, 0);
 	int video_height = ofGetHeight() - (2.2 * ICON_SIZE) - (playback_scrubber_->getHeight());
@@ -109,7 +109,7 @@ void ofApp::drawVideoSmall() {
 	video_.draw(x_position, y_position, video_width, video_height);
 }
 
-//ALL GOOD
+//Draws all playback controls, including the ofxDatGui slider
 void ofApp::drawPlaybackControls() {
 	gui_->setVisible(true);
 
@@ -171,13 +171,13 @@ void ofApp::drawPlaybackControls() {
 	}
 }
 
-//ALL GOOD
+//Hides app playback controls, including the ofxDatGui slider
 void ofApp::hidePlaybackControls() {
 	gui_->setVisible(false);
 	//as long as we don't explicitly draw the rest of the controls, they won't show up
 }
 
-//IN PROGRESS
+//Draws the box to get the user's like/dislike preference, including the label
 void ofApp::drawRatingBox() {
 	bool isRated = (thumbnail_button_links.at(current_video_object_).second.getRating() != -1);
 	bool isWatched = thumbnail_button_links.at(current_video_object_).second.isWatched();
@@ -227,16 +227,16 @@ void ofApp::drawRatingBox() {
 	}
 }
 
-//ALL GOOD
+//Shows the cursor and transitions back to the menu page
 void ofApp::drawClosingScreen() {
 	ofShowCursor();
 	drawMenuScreen();
 	current_state_ = MENU_SCREEN;
 }
 
-//OPENFRAMEWORKS ACTIONS
+//------------------------------------------------------------------------------------
 
-//ALL GOOD
+//Various functions on key press at different states
 void ofApp::keyPressed(int key) {
 	if (current_state_ == WATCHING_VIDEO || current_state_ == USING_PLAYBACK_CONTROLS) {
 		switch (key) {
@@ -261,12 +261,12 @@ void ofApp::keyPressed(int key) {
 	}
 }
 
-//ALL GOOD
+//Used to track the last time the mouse was moved in order to auto-hide the playback controls
 void ofApp::mouseMoved(int x, int y) {
 	last_mouse_usage_ = ofGetElapsedTimeMillis();
 }
 
-//WORK IN PROGRESS - LIKE/DISLIKE BUGGY
+//Various functions on mouse click (buttons, playback slider, etc.)
 void ofApp::mousePressed(int x, int y, int button) {
 	if (current_state_ == MENU_SCREEN) {
 		//Load the thumbnail that was clicked, if any were clicked
@@ -319,7 +319,6 @@ void ofApp::mousePressed(int x, int y, int button) {
 				switch (i) {
 				case 0:
 					thumbnail_button_links.at(current_video_object_).second.setRating(1); //using at because it won't create one if it doesn't exist
-					std::cout << "Liked" << std::endl;
 					break;
 				case 1:
 					thumbnail_button_links.at(current_video_object_).second.setRating(0);
@@ -327,32 +326,31 @@ void ofApp::mousePressed(int x, int y, int button) {
 				default:
 					break;
 				}
-				std::cout << "IF BREAK" << std::endl;
-				break;
+				break; //can't click on two objects at the same time (since we know for a fact they don't intersect
 			}
 		}
-		std::cout << "state changed" << std::endl;
 		current_state_ = CLOSING_VIDEO;
 	}
 }
 
-//ALL GOOD
+//Behavior that occurs when the slider is clicked at a certain point
 void ofApp::onSliderEvent(ofxDatGuiSliderEvent e) {
 	video_.setPosition(e.value);
 }
 
-//ALL GOOD
+//Manipulates the last mouse usage time so that the playback controls are hidden
 void ofApp::mouseExited(int x, int y) {
 	last_mouse_usage_ = ofGetElapsedTimeMillis() - 2500; //once the mouse leaves, trigger the hiding of playback controls
 }
 
-//WORK IN PROGRESS -- ACCEPTABLE FOR NOW
+//Adjusts the playback slider on resize
 void ofApp::windowResized(int w, int h) {
 	playback_scrubber_->setWidth(ofGetWidth(), 0);
 }
 
-	
-//VIDEO PLAYING CONTROLS -- ALL GOOD
+//------------------------------------------------------------------------------------
+
+//Will toggle the video playing state
 void ofApp::TogglePause() {
 	float position = video_.getPosition();
 	is_paused_ = !is_paused_;
@@ -363,6 +361,7 @@ void ofApp::TogglePause() {
 	}
 }
 
+//Forwards by exactly 2% of the video's length; capped at max video position
 void ofApp::Forward() {
 	float position = video_.getPosition();
 	position = (position + 0.01 > 1) ? 1 : position + 0.02; //will cap position to 1
@@ -373,6 +372,7 @@ void ofApp::Forward() {
 	}
 }
 
+//Rewinds by exactly 2% of the video's length; capped at min video position
 void ofApp::Rewind() {
 	float position = video_.getPosition();
 	position = (position - 0.01 < 0) ? 0 : position - 0.02; //will floor position at 0
@@ -383,8 +383,9 @@ void ofApp::Rewind() {
 	}
 }
 
+//------------------------------------------------------------------------------------
 
-//LOADING AND CLOSING -- ALL GOOD
+//Will load a video from a VideoObject
 void ofApp::LoadVideo(VideoObject &video) {
 	current_state_ = LOADING_VIDEO; //here in case I want to implement a loading screen
 	string filepath = video.getVideoFilepath();
@@ -404,6 +405,7 @@ void ofApp::LoadVideo(VideoObject &video) {
 	current_state_ = WATCHING_VIDEO;
 }
 
+//Will stop playing a video given a VideoObject that is playing
 void ofApp::CloseVideo(VideoObject &video) {
 	current_state_ = CLOSING_VIDEO;
 	video.setPlaybackPosition(video_.getPosition());
@@ -414,7 +416,8 @@ void ofApp::CloseVideo(VideoObject &video) {
 
 }
 
-//INITIALIZATION
+//------------------------------------------------------------------------------------
+
 //InitializeThumbnails() referenced from: https://forum.openframeworks.cc/t/technique-to-generate-thumbnails-from-a-lot-of-videos/14804/3
 void ofApp::InitializeThumbnails() {
 	std::string videosFolder = "movies";
@@ -455,16 +458,19 @@ void ofApp::InitializeThumbnails() {
 	}
 }
 
+//Initialized all ofImages with icons
 void ofApp::InitializeIcons() {
-	//Playback control icons
+	//Playback background icon
 	playback_background_ = ofImage("icons/background.png");
 	playback_background_.setColor(ofColor(50, 50, 50));
 	playback_background_.resize(ofGetWidth(), ICON_SIZE * 1.1);
 
+	//Rating box background icon
 	rating_box_background_ =  ofImage("icons/background.png");
 	rating_box_background_.setColor(ofColor(50, 50, 50));
 	rating_box_background_.resize(ofGetWidth() / 2, ofGetHeight() / 2);
 
+	//Playback control icons
 	play_icon_ = ofImage("icons/play.png");
 	pause_icon_ = ofImage("icons/pause.png");
 	forward_icon_ = ofImage("icons/forward.png");
@@ -491,8 +497,7 @@ void ofApp::InitializeIcons() {
 	dislike_icon_.resize(ICON_SIZE, ICON_SIZE);
 }
 
-
-//DISPLAY IMAGES ON MENU SCREEN
+//Displays the thumbnails after they have been initialized
 void ofApp::DisplayThumbnails() {
 	std::string thumbs_folder = "thumbs";
 	ofDirectory dir;
@@ -516,18 +521,14 @@ void ofApp::DisplayThumbnails() {
 		file.open(ofToDataPath("movies/" + ofFilePath::getBaseName(image_path) + ".mp4"), ofFile::ReadWrite, false);
 
 		if (file.exists()) {
-			img.load("thumbs/" + ofFilePath::getBaseName(image_path) + ".jpg");
-
-			//Add video objects to our array if they aren't already there
 			VideoObject vid = VideoObject(ofFilePath::getBaseName(image_path));
-			bool contains_video = false;
-			for (auto video : video_objects_) {
-				if (video.getVideoFilepath() == "movies/" + ofFilePath::getBaseName(image_path) + ".mp4") {
-					contains_video = true;
+			for (auto video_object : loaded_video_objects_) {
+				//If we have existing data, use it; otherwise, go with standard defaults
+				if (video_object.getVideoFilepath() == vid.getVideoFilepath()) {
+					vid.setLabel(video_object.getLabel());
+					vid.setRating(video_object.getRating());
+					vid.setWatched(video_object.isWatched());
 				}
-			}
-			if (!contains_video) {
-				video_objects_.push_back(vid);
 			}
 
 			//perform check to see if we have reached the end of a row
@@ -542,6 +543,7 @@ void ofApp::DisplayThumbnails() {
 			//int y = vertical_padding + row * (image_height + vertical_padding);
 
 			//draw image thumbnail and label using x and y coordinates
+			img.load("thumbs/" + ofFilePath::getBaseName(image_path) + ".jpg");
 			img.draw(x, y, image_width, image_height);
 
 			string label = ofFilePath::getBaseName(image_path);
@@ -562,6 +564,7 @@ void ofApp::DisplayThumbnails() {
 	}
 }
 
+//Displays the Netflix Logo
 void ofApp::DisplayLogo() {
 	int x = (ofGetWidth() - logo_.getWidth()) / 2;
 	int y = ofGetHeight() / 10;
