@@ -35,6 +35,12 @@ void ofApp::update() {
 		current_state_ = (ofGetElapsedTimeMillis() - last_mouse_usage_ > 2500) ? WATCHING_VIDEO : USING_PLAYBACK_CONTROLS;
 		video_.update();
 		playback_scrubber_->setValue(video_.getPosition());
+
+		if (video_.getPosition() > 0.999) {
+			video_.stop();
+			thumbnail_button_links.at(current_video_object_).second.setWatched(true);
+			current_state_ = RATING_VIDEO;
+		}
 	}
 	else if (current_state_ == RATING_VIDEO || current_state_ == CLOSING_VIDEO) {
 		bool isRated = (thumbnail_button_links.at(current_video_object_).second.getRating() != -1);
@@ -42,7 +48,7 @@ void ofApp::update() {
 		current_state_ = (!isRated && isWatched) ? RATING_VIDEO : CLOSING_VIDEO;
 
 		if (current_state_ == RATING_VIDEO) {
-			//NEEDS IMPLEMENTATION
+			//wait for mouse click somewhere
 		}
 		else {
 			CloseVideo(thumbnail_button_links.at(current_video_object_).second);
@@ -66,6 +72,8 @@ void ofApp::draw() {
 		drawPlaybackControls();
 	}
 	else if (current_state_ == RATING_VIDEO) {
+		ofShowCursor();
+		hidePlaybackControls();
 		drawRatingBox();
 	}
 	else if (current_state_ == CLOSING_VIDEO) {
@@ -170,38 +178,42 @@ void ofApp::hidePlaybackControls() {
 
 //IN PROGRESS
 void ofApp::drawRatingBox() {
-	ofBackground(0, 0, 0);
-	
-	//Draw Background
-	playback_background_.resize(ofGetWidth() / 2, ofGetHeight() / 2); //recycling is healthier for the planet lol (and memory too, I suppose)
-	int x = ofGetWidth() / 4;
-	int y = ofGetHeight() / 4;
-	playback_background_.draw(x, y);
+	bool isRated = (thumbnail_button_links.at(current_video_object_).second.getRating() != -1);
+	bool isWatched = thumbnail_button_links.at(current_video_object_).second.isWatched();
+	//Doing this allows us to avoid the 0.01 (but visible) drawing and undrawing of the rating box when these conditions aren't met
+	if (isWatched && !isRated) {
+		ofBackground(0, 0, 0);
 
-	//Draw Like Button
-	x = (ofGetWidth() - 2 * like_icon_.getWidth()) / 3;
-	y = y + playback_background_.getHeight() - like_icon_.getHeight();
-	like_icon_.draw(x, y);
-	like_button_ = ofRectangle(x, y, like_icon_.getWidth(), like_icon_.getHeight());
+		//Draw Background
+		int x = ofGetWidth() / 4;
+		int y = ofGetHeight() / 4;
+		rating_box_background_.draw(x, y);
 
-	//Draw Dislike Button
-	x = (2 * (ofGetWidth() - 2 * like_icon_.getWidth())) / 3;
-	like_icon_.draw(x, y);
-	like_button_ = ofRectangle(x, y, like_icon_.getWidth(), like_icon_.getHeight());
+		//Draw Like Button
+		x = (ofGetWidth() - 2 * like_icon_.getWidth()) / 3;
+		y = y + rating_box_background_.getHeight() - like_icon_.getHeight();
+		like_icon_.draw(x, y);
+		like_button_ = ofRectangle(x, y, like_icon_.getWidth(), like_icon_.getHeight());
 
-	//Add to array, if not already in there
-	if (playback_buttons_.size() != 2) {
-		while (playback_buttons_.size() > 0) {
-			playback_buttons_.pop_back();
-		}
+		//Draw Dislike Button
+		x = (2 * (ofGetWidth() - 2 * like_icon_.getWidth())) / 3;
+		dislike_icon_.draw(x, y);
+		dislike_button_ = ofRectangle(x, y, like_icon_.getWidth(), like_icon_.getHeight());
 
-		if (playback_buttons_.size() <= 0) {
-			rating_buttons_.push_back(like_button_);
-			rating_buttons_.push_back(dislike_button_);
-		}
-		else {
-			rating_buttons_[0] = like_button_;
-			rating_buttons_[1] = dislike_button_;
+		//Add to array, if not already in there
+		if (rating_buttons_.size() != 2) {
+			while (rating_buttons_.size() > 0) {
+				rating_buttons_.pop_back();
+			}
+
+			if (rating_buttons_.size() <= 0) {
+				rating_buttons_.push_back(like_button_);
+				rating_buttons_.push_back(dislike_button_);
+			}
+			else {
+				rating_buttons_[0] = like_button_;
+				rating_buttons_[1] = dislike_button_;
+			}
 		}
 	}
 }
@@ -245,6 +257,7 @@ void ofApp::mouseMoved(int x, int y) {
 	last_mouse_usage_ = ofGetElapsedTimeMillis();
 }
 
+//WORK IN PROGRESS - LIKE/DISLIKE BUGGY
 void ofApp::mousePressed(int x, int y, int button) {
 	if (current_state_ == MENU_SCREEN) {
 		//Load the thumbnail that was clicked, if any were clicked
@@ -284,17 +297,20 @@ void ofApp::mousePressed(int x, int y, int button) {
 						default:
 							break;
 						}
+						break;
 					}
+
 				}
 			}
 	} else if (current_state_ == RATING_VIDEO) {
 		ofRectangle button;
 		for (int i = 0; i < rating_buttons_.size(); i++) {
-			button = playback_buttons_.at(i);
+			button = rating_buttons_.at(i);
 			if (x > button.x && x < (button.x + button.width) && y > button.y &&  y < (button.y + button.height)) {
 				switch (i) {
 				case 0:
 					thumbnail_button_links.at(current_video_object_).second.setRating(1); //using at because it won't create one if it doesn't exist
+					std::cout << "Liked" << std::endl;
 					break;
 				case 1:
 					thumbnail_button_links.at(current_video_object_).second.setRating(0);
@@ -302,8 +318,12 @@ void ofApp::mousePressed(int x, int y, int button) {
 				default:
 					break;
 				}
+				std::cout << "IF BREAK" << std::endl;
+				break;
 			}
 		}
+		std::cout << "state changed" << std::endl;
+		current_state_ = CLOSING_VIDEO;
 	}
 }
 
@@ -322,7 +342,7 @@ void ofApp::windowResized(int w, int h) {
 	playback_scrubber_->setWidth(ofGetWidth(), 0);
 }
 
-
+	
 //VIDEO PLAYING CONTROLS -- ALL GOOD
 void ofApp::TogglePause() {
 	float position = video_.getPosition();
@@ -367,6 +387,7 @@ void ofApp::LoadVideo(VideoObject &video) {
 	}
 	video_.load(filepath);
 	video_.play();
+	video_.setLoopState(ofLoopType(ofLoopType::OF_LOOP_NONE));
 	video_.setPosition(video.getVideoPlaybackPosition());
 	video_.update();
 
@@ -377,9 +398,7 @@ void ofApp::LoadVideo(VideoObject &video) {
 void ofApp::CloseVideo(VideoObject &video) {
 	current_state_ = CLOSING_VIDEO;
 	video.setPlaybackPosition(video_.getPosition());
-
 	if (video_.getPosition() > 0.99) {
-		video.setWatched(true);
 		video.setPlaybackPosition(0);
 	}
 	video_.stop();
@@ -432,6 +451,10 @@ void ofApp::InitializeIcons() {
 	playback_background_ = ofImage("icons/background.png");
 	playback_background_.setColor(ofColor(50, 50, 50));
 	playback_background_.resize(ofGetWidth(), ICON_SIZE * 1.1);
+
+	rating_box_background_ =  ofImage("icons/background.png");
+	rating_box_background_.setColor(ofColor(50, 50, 50));
+	rating_box_background_.resize(ofGetWidth() / 2, ofGetHeight() / 2);
 
 	play_icon_ = ofImage("icons/play.png");
 	pause_icon_ = ofImage("icons/pause.png");

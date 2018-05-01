@@ -44,6 +44,7 @@ class ofApp : public ofBaseApp{
 		ofTrueTypeFont menu_label_;
 
 		ofImage playback_background_;
+		ofImage rating_box_background_;
 		ofImage play_icon_;
 		ofImage pause_icon_;
 		ofImage forward_icon_;
@@ -78,6 +79,7 @@ class ofApp : public ofBaseApp{
 		void drawVideoSmall();
 		void drawPlaybackControls();
 		void hidePlaybackControls();
+		void hideRatingBox();
 		void drawClosingScreen();
 		void drawRatingBox();
 
