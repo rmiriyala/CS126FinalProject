@@ -767,18 +767,19 @@ double ofApp::CalculateAlikenessToUser(string other_user) {
 	}
 
 	int commonality = 0;
-	int total = thumbnail_button_links.size();
+	int total = 0;
 	for (auto pair : thumbnail_button_links) {
 		VideoObject user_video = pair.second;
 		for (auto other_video : other_users_data) {
 			if (user_video.getVideoFilepath() == other_video.getVideoFilepath()) {
 				if (user_video.getRating() == -1 || other_video.getRating() == -1) {
-					continue;
+					//do nothing
 				} else if (user_video.getRating() == other_video.getRating()) {
 					commonality++;
 				} else {
 					commonality--;
 				}
+				total++;
 				break;
 			}
 		}
