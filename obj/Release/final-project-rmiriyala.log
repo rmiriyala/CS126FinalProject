@@ -1,8 +1,8 @@
-﻿  main.cpp
+﻿  ofxDatGuiComponent.cpp
   ofApp.cpp
   Unknown compiler version - please run the configure tests and report the results
   Unknown compiler version - please run the configure tests and report the results
-c:\users\rahul\openframeworks\of_v0.9.8_vs_release\apps\myapps\final-project-rmiriyala\src\ofapp.cpp(575): warning C4715: 'ofApp::Load': not all control paths return a value
+c:\users\rahul\openframeworks\of_v0.9.8_vs_release\apps\myapps\final-project-rmiriyala\src\ofapp.cpp(624): warning C4715: 'ofApp::Load': not all control paths return a value
      Creating library bin\final-project-rmiriyala.lib and object bin\final-project-rmiriyala.exp
   LINK : /LTCG specified but no code generation required; remove /LTCG from the link command line to improve linker performance
   final-project-rmiriyala.vcxproj -> C:\Users\Rahul\OpenFrameworks\of_v0.9.8_vs_release\apps\myApps\final-project-rmiriyala\bin\final-project-rmiriyala.exe

@@ -44,6 +44,7 @@ void ofApp::update() {
 		login_input_box_->update();
 	} else if (current_state_ == GETTING_PASSWORD) {
 		login_input_box_->onTextInputEvent(this, &ofApp::onTextInputEvent);
+		login_input_box_->update();
 	} else if (current_state_ == MENU_SCREEN) {
 		//do nothing
 	} else if (current_state_ == WATCHING_VIDEO || current_state_ == USING_PLAYBACK_CONTROLS) {
@@ -131,17 +132,33 @@ void ofApp::drawUsernameScreen() {
 
 //Draws the password entering interface
 void ofApp::drawPasswordScreen() {
+	login_screen_background_.resize(ofGetWidth(), ofGetHeight());
+	login_screen_background_.draw(0, 0);
+
+
+	float ratio = netflix_logo_.getHeight() / netflix_logo_.getWidth();
+	int width = (ofGetWidth() * 2.7) / 10;
+	netflix_logo_.resize(width, ratio * width);
+
+	int x = ofGetWidth() / 1.40;
+	int y = ofGetHeight() / 20;
+	netflix_logo_.draw(x, y);
+
+	y += netflix_logo_.getHeight()* 1.5; //allows for some padding
+	DisplayUsernameInputBox(width);
+
 	if (!is_creating_new_user_) {
 		login_input_box_->setLabel("Password");
 	} else {
 		login_input_box_->setLabel("New Password");
 	}
-	drawUsernameScreen();
 }
 
 //Draws the Netflix logo and the thumbnails for the videos
 void ofApp::drawMenuScreen() {
+	login_input_box_->setFocused(false);
 	login_gui_->setVisible(false);
+
 	ofBackground(50, 50, 50);
 	DisplayNetflixLogo();
 	DisplayThumbnails();
@@ -343,8 +360,10 @@ void ofApp::mousePressed(int x, int y, int button) {
 	} else if (current_state_ == WATCHING_VIDEO) {
 		TogglePause();
 	} else if (current_state_ == USING_PLAYBACK_CONTROLS) {
+		std::cout << "Mouse pressed" << "\t";
 			if (y >= ofGetHeight() - playback_scrubber_->getHeight()) { //if we are operating on the playback slider
-				//do nothing
+				std::cout << "On playback slider" << std::endl;
+				playback_scrubber_->onSliderEvent(this, &ofApp::onSliderEvent);
 			} else if ((y > 1.1 * ICON_SIZE && y < ofGetHeight() - (1.1 * ICON_SIZE) - (playback_scrubber_->getHeight()))) { //on smaller video
 				TogglePause();
 			} else { //will look to see if the click intersects one of the buttons
@@ -413,33 +432,63 @@ void ofApp::windowResized(int w, int h) {
 
 //Behavior that occurs when the slider is clicked at a certain point
 void ofApp::onSliderEvent(ofxDatGuiSliderEvent e) {
+	std::cout << "Registered command." << std::endl;
 	video_.setPosition(e.value);
 }
 
 //Behavior that occurs when the login box is exited or 'enter' is pressed
 void ofApp::onTextInputEvent(ofxDatGuiTextInputEvent e) {
 	string input = e.text;
+	login_input_box_->setText(""); 
+
+	if (input.size() == 0) {
+		return;
+	}
+
+	for (auto character : input) {
+		if (character == ' ') {
+			return;
+		}
+	}
+
 	if (current_state_ == GETTING_USERNAME) {
-		login_input_box_->setText("");
 		if (!is_creating_new_user_) {
 			if (ExistsUser(input)) {
 				current_state_ = GETTING_PASSWORD;
+				return;
 			} else {
+				login_input_box_->setText("Please Try Again...");
 				show_create_button_ = true;
+				return;
 			}
 		} else {
-			CreateNewUser(input);
+			if (!ExistsUser(input)) {
+				std::cout << "REACHED" << std::endl;
+				user_ = input;
+				current_state_ = GETTING_PASSWORD;
+				return;
+			} else {
+				login_input_box_->setText("Username In Use...");
+				return;
+			}
 		}
 	} else if (current_state_ == GETTING_PASSWORD) {
 		if (!is_creating_new_user_) {
 			if (input == password_) {
 				current_state_ = MENU_SCREEN;
+				return;
 			} else {
 				login_input_box_->setText("Please Try Again...");
+				return;
 			}
 		} else {
-			password_ = input;
-			current_state_ = MENU_SCREEN;
+			if (input != user_) {
+				password_ = input;
+				std::cout << "Username: " << user_ << std::endl;
+				std::cout << "Password: " << password_ << std::endl;
+				current_state_ = MENU_SCREEN;
+				return;
+			}
 		}
 	}
 }
@@ -590,6 +639,7 @@ bool ofApp::ExistsUser(string user) {
 	return true;
 }
 
+//Adds the username to current data, prompts password stage
 void ofApp::CreateNewUser(string user) {
 	user_ = user;
 	current_state_ = GETTING_PASSWORD;
