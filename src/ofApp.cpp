@@ -4,20 +4,30 @@
 void ofApp::setup(){
 	ofBackground(50, 50, 50);
 
-	Load("Rahul");
-	std::cout << "loading user data...done" << std::endl;
+	/*user_ = GetUser();
+	while (user_ == "") {
+		GetUser();
+	}
+	Load(user_);
+	std::cout << "loading user data...done" << std::endl;*/
 
 	InitializeThumbnails();
 	std::cout << "loading thumbnails...done" << std::endl;
 
-	InitializeIcons();
+	InitializeImages();
 	std::cout << "loading icons...done" << std::endl;
 
 	//Setup GUI
-	gui_ = new ofxDatGui(ofxDatGuiAnchor::BOTTOM_LEFT);
+	slider_gui_ = new ofxDatGui(ofxDatGuiAnchor::BOTTOM_LEFT);
+	int x = ofGetWidth() / 1.40;
+	int y = (ofGetHeight() / 20) + ((((ofGetWidth() * 2.7) / 10) * (netflix_logo_.getHeight() / netflix_logo_.getWidth())) * 2.5);
+	login_gui_ = new ofxDatGui(x, y);
+
+	//Setup Login Box
+	login_input_box_ = login_gui_->addTextInput("Username", "");
 
 	//Setup Playback Scrubber
-	playback_scrubber_ = gui_->addSlider("Playback Slider", 0, 1, 0);
+	playback_scrubber_ = slider_gui_->addSlider("Playback Slider", 0, 1, 0);
 	playback_scrubber_->setWidth(ofGetWidth(), 0);
 	playback_scrubber_->setBorderVisible(false);
 
@@ -27,11 +37,16 @@ void ofApp::setup(){
 	rating_instructions_.load(OF_TTF_SANS, 60);
 
 	//Hide GUIs
-	gui_->setVisible(false);
+	slider_gui_->setVisible(false);
+	login_gui_->setVisible(false);
 }
 
 void ofApp::update() {
-	if (current_state_ == MENU_SCREEN) {
+	if (current_state_ == GETTING_USERNAME) {
+		login_input_box_->onTextInputEvent(this, &ofApp::onTextInputEvent);
+		login_input_box_->update();
+	}
+	else if (current_state_ == MENU_SCREEN) {
 		//do nothing
 	}
 	else if (current_state_ == WATCHING_VIDEO || current_state_ == USING_PLAYBACK_CONTROLS) {
@@ -60,7 +75,13 @@ void ofApp::update() {
 }
 
 void ofApp::draw() {
-	if (current_state_ == MENU_SCREEN) {
+	if (current_state_ == GETTING_USERNAME) {
+		drawUsernameScreen();
+	}
+	else if (current_state_ == GETTING_PASSWORD) {
+		drawPasswordScreen();
+	}
+	else if (current_state_ == MENU_SCREEN) {
 		drawMenuScreen();
 	}
 	else if (current_state_ == WATCHING_VIDEO) {
@@ -86,10 +107,33 @@ void ofApp::draw() {
 
 //------------------------------------------------------------------------------------
 
+void ofApp::drawUsernameScreen() {
+	login_screen_background_.resize(ofGetWidth(), ofGetHeight());
+	login_screen_background_.draw(0, 0);
+
+
+	float ratio = netflix_logo_.getHeight() / netflix_logo_.getWidth();
+	int width = (ofGetWidth() * 2.7) / 10;
+	netflix_logo_.resize(width, ratio * width);
+
+	int x = ofGetWidth() / 1.40;
+	int y = ofGetHeight() / 20;
+	netflix_logo_.draw(x, y);
+
+	y += netflix_logo_.getHeight()* 1.5; //allows for some padding
+	DisplayUsernameInputBox(width);
+}
+
+void ofApp::drawPasswordScreen() {
+	login_input_box_->setLabel("Password");
+	drawUsernameScreen();
+}
+
 //Draws the Netflix logo and the thumbnails for the videos
 void ofApp::drawMenuScreen() {
+	login_gui_->setVisible(false);
 	ofBackground(50, 50, 50);
-	DisplayLogo();
+	DisplayNetflixLogo();
 	DisplayThumbnails();
 }
 
@@ -114,7 +158,7 @@ void ofApp::drawVideoSmall() {
 
 //Draws all playback controls, including the ofxDatGui slider
 void ofApp::drawPlaybackControls() {
-	gui_->setVisible(true);
+	slider_gui_->setVisible(true);
 
 	//Draw background
 	int x = (ofGetWidth() - playback_background_.getWidth()) / 2;
@@ -176,7 +220,7 @@ void ofApp::drawPlaybackControls() {
 
 //Hides app playback controls, including the ofxDatGui slider
 void ofApp::hidePlaybackControls() {
-	gui_->setVisible(false);
+	slider_gui_->setVisible(false);
 	//as long as we don't explicitly draw the rest of the controls, they won't show up
 }
 
@@ -416,7 +460,7 @@ void ofApp::CloseVideo(VideoObject &video) {
 		video.setPlaybackPosition(0);
 	}
 	video_.stop();
-	Save("Rahul");
+	Save(user_);
 }
 
 //Will save all created video objects from thumbnail button links
@@ -476,6 +520,23 @@ bool ofApp::Load(string username) {
 	}
 }
 
+//Returns the username if authentication passes, empty string otherwise
+bool ofApp::ExistsUser(string user) {
+	std::ifstream data_file("../data/" + user + "-data.txt");
+	std::ifstream password_file("../data/" + user + "-password.txt");
+
+	if (!password_file || !data_file) {
+		std::cout << "User " << user << " does not exist.  Please create an account." << std::endl;
+		return false;
+	}
+
+	string password;
+	password_file >> password_;
+
+	return true;
+}
+
+
 //------------------------------------------------------------------------------------
 
 //InitializeThumbnails() referenced from: https://forum.openframeworks.cc/t/technique-to-generate-thumbnails-from-a-lot-of-videos/14804/3
@@ -519,7 +580,7 @@ void ofApp::InitializeThumbnails() {
 }
 
 //Initialized all ofImages with icons
-void ofApp::InitializeIcons() {
+void ofApp::InitializeImages() {
 	//Playback background icon
 	playback_background_ = ofImage("icons/background.png");
 	playback_background_.setColor(ofColor(50, 50, 50));
@@ -544,10 +605,10 @@ void ofApp::InitializeIcons() {
 	back_icon_.resize(0.9 * ICON_SIZE, 0.9 * ICON_SIZE);
 
 	//Netflix logo
-	logo_ = ofImage("icons/Netflix.png");
-	float ratio = logo_.getHeight() / logo_.getWidth();
+	netflix_logo_ = ofImage("icons/Netflix.png");
+	float ratio = netflix_logo_.getHeight() / netflix_logo_.getWidth();
 	int width = (ofGetWidth() * 5) / 10;
-	logo_.resize(width, ratio * width);
+	netflix_logo_.resize(width, ratio * width);
 
 	//Like and Dislike Icons
 	like_icon_ = ofImage("icons/like.png");
@@ -555,6 +616,9 @@ void ofApp::InitializeIcons() {
 
 	like_icon_.resize(ICON_SIZE, ICON_SIZE);
 	dislike_icon_.resize(ICON_SIZE, ICON_SIZE);
+
+	//Login Screen
+	login_screen_background_ = ofImage("icons/loginbackground.png");
 }
 
 //Displays the thumbnails after they have been initialized, also pilfers from loaded videos if there are any
@@ -600,7 +664,7 @@ void ofApp::DisplayThumbnails() {
 			
 			//calculate next x and y
 			int x = horizontal_padding + column * (image_width + horizontal_padding);
-			int y = vertical_padding + ((ofGetHeight() / 10) + (logo_.getHeight())) +  row * (image_height + vertical_padding); //with logo
+			int y = vertical_padding + ((ofGetHeight() / 10) + (netflix_logo_.getHeight())) +  row * (image_height + vertical_padding); //with logo
 			//int y = vertical_padding + row * (image_height + vertical_padding);
 
 			//draw image thumbnail and label using x and y coordinates
@@ -636,8 +700,44 @@ void ofApp::DisplayThumbnails() {
 }
 
 //Displays the Netflix Logo
-void ofApp::DisplayLogo() {
-	int x = (ofGetWidth() - logo_.getWidth()) / 2;
+void ofApp::DisplayNetflixLogo() {
+	float ratio = netflix_logo_.getHeight() / netflix_logo_.getWidth();
+	int width = (ofGetWidth() * 5) / 10;
+	netflix_logo_.resize(width, ratio * width);
+	int x = (ofGetWidth() - netflix_logo_.getWidth()) / 2;
 	int y = ofGetHeight() / 10;
-	logo_.draw(x, y); //optional netflix logo
+	netflix_logo_.draw(x, y); //optional netflix logo
+}
+
+//Displays the login input box, specifically for the username portion
+void ofApp::DisplayUsernameInputBox(int width) {
+	login_gui_->setVisible(true);
+	login_input_box_->setHeight(100); //to change text size, edit ofxSmartFont.h at line 61, current size is 20
+	login_input_box_->setTextUpperCase(false);
+	login_input_box_->setWidth(width, width / 3);
+}
+
+void ofApp::DisplayCreateButton() {
+	//ADD STUFF
+}
+
+
+void ofApp::onTextInputEvent(ofxDatGuiTextInputEvent e) {
+	string input = e.text;
+	if (current_state_ == GETTING_USERNAME) {
+		if (ExistsUser(input)) {
+			login_input_box_->setText("");
+			current_state_ = GETTING_PASSWORD;
+		}
+		else {
+			login_input_box_->setText("Could Not Find User: " + input);
+			show_create_button_ = true;
+		}
+	} else if (current_state_ == GETTING_PASSWORD) {
+		if (input == password_) {
+			current_state_ = MENU_SCREEN;
+		} else {
+			login_input_box_->setText("Please Try Again...");
+		}
+	}
 }

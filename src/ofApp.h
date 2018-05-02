@@ -14,6 +14,8 @@ using std::pair;
 class ofApp : public ofBaseApp{
 
 	enum AppState {
+		GETTING_USERNAME,
+		GETTING_PASSWORD,
 		WATCHING_VIDEO, //for drawVideo()
 		LOADING_VIDEO, //to prompt LoadVideo()
 		CLOSING_VIDEO,
@@ -23,8 +25,14 @@ class ofApp : public ofBaseApp{
 	};
 
 	private:
+		//User
+		string user_;
+		string password_;
+		bool show_create_button_ = false;
+		bool is_creating_new_user_ = false;
+
 		//State Control
-		AppState current_state_ = MENU_SCREEN;
+		AppState current_state_ = GETTING_USERNAME;
 
 		//Objects
 		vector<pair<ofRectangle, VideoObject>> thumbnail_button_links;
@@ -32,16 +40,19 @@ class ofApp : public ofBaseApp{
 		ofVideoPlayer video_;
 		
 		//GUI Elements
-		ofxDatGui* gui_;
+		ofxDatGui* slider_gui_;
 		ofxDatGuiSlider* playback_scrubber_;
+		ofxDatGui* login_gui_;
+		ofxDatGuiTextInput* login_input_box_;
 
 		ofTrueTypeFont video_label_;
 		ofTrueTypeFont menu_label_;
 		ofTrueTypeFont rating_instructions_;
 
+		ofImage login_screen_background_;
 		ofImage like_icon_;
 		ofImage dislike_icon_;
-		ofImage logo_;
+		ofImage netflix_logo_;
 		ofImage playback_background_;
 		ofImage rating_box_background_;
 		ofImage play_icon_;
@@ -70,6 +81,8 @@ class ofApp : public ofBaseApp{
 		void update();
 		void draw();
 
+		void drawUsernameScreen();
+		void drawPasswordScreen();
 		void drawMenuScreen();
 		void drawVideoFull();
 		void drawVideoSmall();
@@ -106,11 +119,17 @@ class ofApp : public ofBaseApp{
 		bool Save(string username);
 		bool Load(string username);
 
+		bool ExistsUser(string user);
+
 		//Display Helpers
 		void InitializeThumbnails();
-		void InitializeIcons();
+		void InitializeImages();
 		void DisplayThumbnails();
-		void DisplayLogo();
+		void DisplayNetflixLogo();
+		void DisplayUsernameInputBox(int width);
+		void DisplayCreateButton();
+
+		void onTextInputEvent(ofxDatGuiTextInputEvent e);
 
 		//Constants
 		const int ICON_SIZE = 100;
