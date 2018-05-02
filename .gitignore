@@ -12,3 +12,5 @@
 *.ipch
 *.ipch
 *-password.txt
+*.tlog
+*.tlog

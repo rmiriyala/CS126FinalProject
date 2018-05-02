@@ -4,9 +4,6 @@
 void ofApp::setup(){
 	ofBackground(50, 50, 50);
 
-	Load();
-	std::cout << "loading user data...done" << std::endl;
-
 	InitializeThumbnails();
 	std::cout << "loading thumbnails...done" << std::endl;
 
@@ -52,6 +49,7 @@ void ofApp::update() {
 		playback_scrubber_->onSliderEvent(this, &ofApp::onSliderEvent);
 		video_.update();
 		playback_scrubber_->setValue(video_.getPosition());
+		playback_scrubber_->update();
 
 		if (video_.getPosition() > 0.999) {
 			video_.stop();
@@ -421,6 +419,7 @@ void ofApp::mouseExited(int x, int y) {
 
 //Adjusts the playback slider on resize
 void ofApp::windowResized(int w, int h) {
+	playback_background_.resize(ofGetWidth(), ICON_SIZE * 1.1);
 	playback_scrubber_->setWidth(ofGetWidth(), 0);
 
 	int x = ofGetWidth() / 1.40;
@@ -463,7 +462,6 @@ void ofApp::onTextInputEvent(ofxDatGuiTextInputEvent e) {
 			}
 		} else {
 			if (!ExistsUser(input)) {
-				std::cout << "REACHED" << std::endl;
 				user_ = input;
 				current_state_ = GETTING_PASSWORD;
 				return;
@@ -475,6 +473,8 @@ void ofApp::onTextInputEvent(ofxDatGuiTextInputEvent e) {
 	} else if (current_state_ == GETTING_PASSWORD) {
 		if (!is_creating_new_user_) {
 			if (input == password_) {
+				Load();
+				std::cout << "loading user data...done" << std::endl;
 				current_state_ = MENU_SCREEN;
 				return;
 			} else {
@@ -484,8 +484,10 @@ void ofApp::onTextInputEvent(ofxDatGuiTextInputEvent e) {
 		} else {
 			if (input != user_) {
 				password_ = input;
-				std::cout << "Username: " << user_ << std::endl;
-				std::cout << "Password: " << password_ << std::endl;
+				std::cout << "New Username: " << user_ << std::endl;
+				std::cout << "New Password: " << password_ << std::endl;
+				Load();
+				std::cout << "loading user data...done" << std::endl;
 				current_state_ = MENU_SCREEN;
 				return;
 			}
@@ -621,6 +623,7 @@ bool ofApp::Load() {
 			video = VideoObject();
 		}
 	}
+	return true;
 }
 
 //Returns the username if authentication passes, empty string otherwise
@@ -636,6 +639,7 @@ bool ofApp::ExistsUser(string user) {
 	string password;
 	password_file >> password_;
 
+	user_ = user;
 	return true;
 }
 
@@ -645,6 +649,12 @@ void ofApp::CreateNewUser(string user) {
 	current_state_ = GETTING_PASSWORD;
 }
 
+//------------------------------------------------------------------------------------
+
+void ofApp::BuildAggregateUserDatabase() {
+	ofDirectory dir;
+	dir.allowExt("txt");
+}
 
 //------------------------------------------------------------------------------------
 

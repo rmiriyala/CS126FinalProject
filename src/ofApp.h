@@ -38,6 +38,9 @@ class ofApp : public ofBaseApp{
 		vector<pair<ofRectangle, VideoObject>> thumbnail_button_links;
 		vector<VideoObject> loaded_video_objects_;
 		ofVideoPlayer video_;
+
+		//Recommendation System
+		vector<map<string, int>> aggregate_user_data_;
 		
 		//GUI Elements
 		ofxDatGui* slider_gui_;
@@ -122,6 +125,9 @@ class ofApp : public ofBaseApp{
 		bool Load();
 		bool ExistsUser(string user);
 		void CreateNewUser(string user);
+
+		//Recommendation system
+		void BuildAggregateUserDatabase();
 
 		//Display Helpers
 		void InitializeThumbnails();
