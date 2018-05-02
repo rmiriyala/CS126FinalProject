@@ -160,6 +160,7 @@ void ofApp::drawMenuScreen() {
 	ofBackground(50, 50, 50);
 	DisplayNetflixLogo();
 	DisplayThumbnails();
+	DisplayRecommendationBox();
 }
 
 //Draws a fullscreen version of the video
@@ -358,9 +359,7 @@ void ofApp::mousePressed(int x, int y, int button) {
 	} else if (current_state_ == WATCHING_VIDEO) {
 		TogglePause();
 	} else if (current_state_ == USING_PLAYBACK_CONTROLS) {
-		std::cout << "Mouse pressed" << "\t";
 			if (y >= ofGetHeight() - playback_scrubber_->getHeight()) { //if we are operating on the playback slider
-				std::cout << "On playback slider" << std::endl;
 				playback_scrubber_->onSliderEvent(this, &ofApp::onSliderEvent);
 			} else if ((y > 1.1 * ICON_SIZE && y < ofGetHeight() - (1.1 * ICON_SIZE) - (playback_scrubber_->getHeight()))) { //on smaller video
 				TogglePause();
@@ -431,7 +430,6 @@ void ofApp::windowResized(int w, int h) {
 
 //Behavior that occurs when the slider is clicked at a certain point
 void ofApp::onSliderEvent(ofxDatGuiSliderEvent e) {
-	std::cout << "Registered command." << std::endl;
 	video_.setPosition(e.value);
 }
 
@@ -561,12 +559,13 @@ void ofApp::CloseVideo(VideoObject &video) {
 	}
 	video_.stop();
 	Save();
+	recommended_video_filepath_ = GenerateRecommendation();
 }
 
 //Will save all created video objects from thumbnail button links
 bool ofApp::Save() {
-	std::ofstream save_data("../data/" + user_ + "-data.txt");
-	std::ofstream save_password("../data/" + user_ + "-password.txt");
+	std::ofstream save_data("../bin/data/userData/" + user_ + "-data.txt");
+	std::ofstream save_password("../bin/data/userData/" + user_ + "-password.txt");
 
 	if (!save_data || !save_password) {
 		return false;
@@ -590,7 +589,7 @@ bool ofApp::Save() {
 
 //Will load all saved video objects to loaded_video_objects
 bool ofApp::Load() {
-	std::ifstream load_file("../data/" + user_ + "-data.txt");
+	std::ifstream load_file("../bin/data/userData/" + user_ + "-data.txt");
 	if (!load_file) {
 		return false;
 	}
@@ -626,10 +625,50 @@ bool ofApp::Load() {
 	return true;
 }
 
+//Overloaded function of Load(), will accept a user and return a vector of video objects
+vector<VideoObject> ofApp::Load(string user) {
+	std::ifstream load_file("../bin/data/userData/" + user + "-data.txt");
+	if (!load_file) {
+		return {};
+	}
+
+	vector<VideoObject> video_objects;
+	string input;
+	VideoObject video;
+
+	while (load_file >> input) { // NOLINT
+		if (input == "!") {
+			string path;
+			std::getline(load_file, path); //accidentally gets the space following "!"
+			video.setVideoFilepath(path.substr(1));
+		}
+		else if (input == "@") {
+			int rating;
+			load_file >> rating; // NOLINT
+			video.setRating(rating);
+		}
+		else if (input == "#") {
+			bool watched;
+			load_file >> watched; // NOLINT
+			video.setWatched(watched);
+		}
+		else if (input == "$") {
+			double position;
+			load_file >> position;
+			video.setPlaybackPosition(position);
+		}
+		else if (input == "%") {
+			video_objects.push_back(video);
+			video = VideoObject();
+		}
+	}
+	return video_objects;
+}
+
 //Returns the username if authentication passes, empty string otherwise
 bool ofApp::ExistsUser(string user) {
-	std::ifstream data_file("../data/" + user + "-data.txt");
-	std::ifstream password_file("../data/" + user + "-password.txt");
+	std::ifstream data_file("../bin/data/userData/" + user + "-data.txt");
+	std::ifstream password_file("../bin/data/userData/" + user + "-password.txt");
 
 	if (!password_file || !data_file) {
 		std::cout << "User " << user << " does not exist.  Please create an account." << std::endl;
@@ -651,9 +690,128 @@ void ofApp::CreateNewUser(string user) {
 
 //------------------------------------------------------------------------------------
 
-void ofApp::BuildAggregateUserDatabase() {
+//Returns the video filepath of our recommendation
+string ofApp::GenerateRecommendation() {
+	BuildAggregateUserComparisonDatabase();
+	string best_video_filename = "";
+	double best_value = -100000; //we want to always recommend something, even if it is what they will hate the least
+	for (auto pair : aggregate_user_data_) {
+		string filename = pair.first;
+		double value = Sum(pair.second);
+
+		std::cout << filename << ", " << value << std::endl;
+
+		bool is_watched = false;
+
+		for (auto pair : thumbnail_button_links) {
+			if (pair.second.getVideoFilepath() == filename) {
+				is_watched = pair.second.isWatched();
+			}
+		}
+
+		if (value > best_value && !is_watched) {
+			best_value = value;
+			best_video_filename = filename;
+		}
+	}
+
+	if (best_video_filename == "") {
+		//std::cout << "There is no recommendation based on your watch history" << std::endl;
+	}
+	return best_video_filename;
+}
+
+//Builds a vector representing the probability that the user's preferences align with each other user
+void ofApp::BuildAggregateUserComparisonDatabase() {
+	string data_folder = "userData";
 	ofDirectory dir;
 	dir.allowExt("txt");
+	dir.listDir(data_folder);
+
+	for (int i = 0; i < dir.size(); i++) {
+		string path = dir.getPath(i);
+		if (path.substr(path.size() - 9) == "-data.txt") {
+			string user = GetUserFromPath(path);
+			if (user != user_) {
+				double alikeness_to_user = CalculateAlikenessToUser(user); //get likeness
+				std::cout << "Match with " << user << ": " << alikeness_to_user << std::endl;
+				vector<VideoObject> other_users_data = Load(user); //used to get ratings
+
+				for (auto video : other_users_data) {
+					auto it = aggregate_user_data_.find(video.getVideoFilepath());
+					if (it == aggregate_user_data_.end()) {
+						aggregate_user_data_[video.getVideoFilepath()] = {};//create empty vector if key does not exist
+					}
+
+					if (video.getRating() == -1) {
+						aggregate_user_data_[video.getVideoFilepath()].push_back(0);
+					}
+					else if (video.getRating() == 0) {
+						aggregate_user_data_[video.getVideoFilepath()].push_back(-1 * alikeness_to_user);
+					}
+					else {
+						aggregate_user_data_[video.getVideoFilepath()].push_back(1 * alikeness_to_user);
+					}
+				}
+			}
+		}
+	}
+}
+
+//Calculates the fraction of alikeness to the other_user; if preferences strongly disagree, can be negative
+double ofApp::CalculateAlikenessToUser(string other_user) {
+	vector<VideoObject> other_users_data = Load(other_user);
+	if (other_users_data.size() <= 0) {
+		std::cout << "No data from user " << other_user << std::endl;
+		return 0;
+	}
+
+	int commonality = 0;
+	int total = thumbnail_button_links.size();
+	for (auto pair : thumbnail_button_links) {
+		VideoObject user_video = pair.second;
+		for (auto other_video : other_users_data) {
+			if (user_video.getVideoFilepath() == other_video.getVideoFilepath()) {
+				if (user_video.getRating() == -1 || other_video.getRating() == -1) {
+					continue;
+				} else if (user_video.getRating() == other_video.getRating()) {
+					commonality++;
+				} else {
+					commonality--;
+				}
+				break;
+			}
+		}
+	}
+	return ((double)(commonality) / (double)(total)); //this number can be negative
+}
+
+//Strips the user from the path, given a file that ends in -data.txt
+string ofApp::GetUserFromPath(string path) {
+	string user = "";
+	for (auto character : path) {
+		if (character == '/') {
+			user = "";
+		} else if (character == (char)(92)) { // forward slash (\)
+			user = "";
+		} else {
+			user += character;
+		}
+	}
+
+	auto number_of_chars = user.size() - 9; //will remove -data.txt
+	return user.substr(0, number_of_chars); //removes -data.txt
+}
+
+//Templated sum of (numerical) elements in an array
+template <typename ElementType>	
+ElementType ofApp::Sum(vector<ElementType> vector) {
+	ElementType sum = 0;
+	for (auto element : vector) {
+		sum += element;
+	}
+
+	return sum;
 }
 
 //------------------------------------------------------------------------------------
@@ -817,6 +975,27 @@ void ofApp::DisplayThumbnails() {
 			column++;
 		}
 	}
+}
+
+//Displays rectangular box behind image to appear as a border
+void ofApp::DisplayRecommendationBox() {
+	ofImage recommendation_box = ofImage("icons/recommendationbox.png");
+	int border_width = 10;
+
+	for (auto pair : thumbnail_button_links) {
+		ofRectangle rect = pair.first;
+		VideoObject video = pair.second;
+
+		recommended_video_filepath_ = (recommended_video_filepath_ == "nothing") ? GenerateRecommendation() : recommended_video_filepath_;
+
+		if (video.getVideoFilepath() == recommended_video_filepath_) {
+			recommendation_box.draw(rect.getX() - border_width, rect.getY() - border_width,
+				rect.getWidth() + 2 * border_width, rect.getHeight() + 2 * border_width);
+		}
+	}
+
+	//we drew the box over the image at this point, cover it up by redrawing thumbnails
+	DisplayThumbnails();
 }
 
 //Displays the Netflix Logo

@@ -40,7 +40,8 @@ class ofApp : public ofBaseApp{
 		ofVideoPlayer video_;
 
 		//Recommendation System
-		vector<map<string, int>> aggregate_user_data_;
+		map<string, vector<double>> aggregate_user_data_;
+		string recommended_video_filepath_ = "nothing";
 		
 		//GUI Elements
 		ofxDatGui* slider_gui_;
@@ -123,16 +124,24 @@ class ofApp : public ofBaseApp{
 		void CloseVideo(VideoObject &video);
 		bool Save();
 		bool Load();
+		vector<VideoObject> Load(string user);
 		bool ExistsUser(string user);
 		void CreateNewUser(string user);
 
 		//Recommendation system
-		void BuildAggregateUserDatabase();
+		string GenerateRecommendation();
+		void BuildAggregateUserComparisonDatabase();
+		double CalculateAlikenessToUser(string other_user);
+		string GetUserFromPath(string path);
+
+		template <typename ElementType>
+		ElementType Sum(vector<ElementType> vector);
 
 		//Display Helpers
 		void InitializeThumbnails();
 		void InitializeImages();
 		void DisplayThumbnails();
+		void DisplayRecommendationBox();
 		void DisplayNetflixLogo();
 		void DisplayUsernameInputBox(int width);
 		void DisplayCreateAccountElements();
