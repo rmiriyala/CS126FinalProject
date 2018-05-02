@@ -1,5 +1,18 @@
-﻿  ofApp.cpp
+﻿  ofxDatGuiComponent.cpp
+  ofxSmartFont.cpp
+  ofxDatGui.cpp
+  main.cpp
   Unknown compiler version - please run the configure tests and report the results
+  Unknown compiler version - please run the configure tests and report the results
+  Unknown compiler version - please run the configure tests and report the results
+  Unknown compiler version - please run the configure tests and report the results
+c:\users\rahul\openframeworks\of_v0.9.8_vs_release\addons\ofxdatgui\src\libs\ofxsmartfont\ofxsmartfont.cpp(126): warning C4018: '<': signed/unsigned mismatch
+c:\users\rahul\openframeworks\of_v0.9.8_vs_release\addons\ofxdatgui\src\libs\ofxsmartfont\ofxsmartfont.cpp(128): warning C4018: '<': signed/unsigned mismatch
+  ofApp.cpp
+  Unknown compiler version - please run the configure tests and report the results
+  video_object.cpp
+  Unknown compiler version - please run the configure tests and report the results
+c:\users\rahul\openframeworks\of_v0.9.8_vs_release\apps\myapps\final-project-rmiriyala\src\ofapp.cpp(523): warning C4715: 'ofApp::Load': not all control paths return a value
   final-project-rmiriyala.vcxproj -> C:\Users\Rahul\OpenFrameworks\of_v0.9.8_vs_release\apps\myApps\final-project-rmiriyala\bin\final-project-rmiriyala_debug.exe
   
   	                   9	C:\Users\Rahul\OpenFrameworks\of_v0.9.8_vs_release\export\vs\Win32\

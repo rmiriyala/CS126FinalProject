@@ -4,12 +4,8 @@
 void ofApp::setup(){
 	ofBackground(50, 50, 50);
 
-	/*user_ = GetUser();
-	while (user_ == "") {
-		GetUser();
-	}
-	Load(user_);
-	std::cout << "loading user data...done" << std::endl;*/
+	Load();
+	std::cout << "loading user data...done" << std::endl;
 
 	InitializeThumbnails();
 	std::cout << "loading thumbnails...done" << std::endl;
@@ -32,6 +28,7 @@ void ofApp::setup(){
 	playback_scrubber_->setBorderVisible(false);
 
 	//Setup Labels
+	login_label_.load(OF_TTF_SANS, 30);
 	video_label_.load(OF_TTF_SANS, 40);
 	menu_label_.load(OF_TTF_SANS, 25);
 	rating_instructions_.load(OF_TTF_SANS, 60);
@@ -45,12 +42,13 @@ void ofApp::update() {
 	if (current_state_ == GETTING_USERNAME) {
 		login_input_box_->onTextInputEvent(this, &ofApp::onTextInputEvent);
 		login_input_box_->update();
-	}
-	else if (current_state_ == MENU_SCREEN) {
+	} else if (current_state_ == GETTING_PASSWORD) {
+		login_input_box_->onTextInputEvent(this, &ofApp::onTextInputEvent);
+	} else if (current_state_ == MENU_SCREEN) {
 		//do nothing
-	}
-	else if (current_state_ == WATCHING_VIDEO || current_state_ == USING_PLAYBACK_CONTROLS) {
+	} else if (current_state_ == WATCHING_VIDEO || current_state_ == USING_PLAYBACK_CONTROLS) {
 		current_state_ = (ofGetElapsedTimeMillis() - last_mouse_usage_ > 2500) ? WATCHING_VIDEO : USING_PLAYBACK_CONTROLS;
+		playback_scrubber_->onSliderEvent(this, &ofApp::onSliderEvent);
 		video_.update();
 		playback_scrubber_->setValue(video_.getPosition());
 
@@ -59,16 +57,14 @@ void ofApp::update() {
 			thumbnail_button_links.at(current_video_object_).second.setWatched(true);
 			current_state_ = RATING_VIDEO;
 		}
-	}
-	else if (current_state_ == RATING_VIDEO || current_state_ == CLOSING_VIDEO) {
+	} else if (current_state_ == RATING_VIDEO || current_state_ == CLOSING_VIDEO) {
 		bool isRated = (thumbnail_button_links.at(current_video_object_).second.getRating() != -1);
 		bool isWatched = thumbnail_button_links.at(current_video_object_).second.isWatched();
 		current_state_ = (!isRated && isWatched) ? RATING_VIDEO : CLOSING_VIDEO;
 
 		if (current_state_ == RATING_VIDEO) {
 			//wait for mouse click somewhere
-		}
-		else {
+		} else {
 			CloseVideo(thumbnail_button_links.at(current_video_object_).second);
 		}
 	}
@@ -107,6 +103,7 @@ void ofApp::draw() {
 
 //------------------------------------------------------------------------------------
 
+//Draws the username entering interface
 void ofApp::drawUsernameScreen() {
 	login_screen_background_.resize(ofGetWidth(), ofGetHeight());
 	login_screen_background_.draw(0, 0);
@@ -122,10 +119,23 @@ void ofApp::drawUsernameScreen() {
 
 	y += netflix_logo_.getHeight()* 1.5; //allows for some padding
 	DisplayUsernameInputBox(width);
+
+	if (show_create_button_) {
+		if (!is_creating_new_user_) {
+			DisplayCreateAccountElements();
+		} else {
+			login_input_box_->setLabel("New Username");
+		}
+	}
 }
 
+//Draws the password entering interface
 void ofApp::drawPasswordScreen() {
-	login_input_box_->setLabel("Password");
+	if (!is_creating_new_user_) {
+		login_input_box_->setLabel("Password");
+	} else {
+		login_input_box_->setLabel("New Password");
+	}
 	drawUsernameScreen();
 }
 
@@ -315,7 +325,12 @@ void ofApp::mouseMoved(int x, int y) {
 
 //Various functions on mouse click (buttons, playback slider, etc.)
 void ofApp::mousePressed(int x, int y, int button) {
-	if (current_state_ == MENU_SCREEN) {
+	if (current_state_ == GETTING_USERNAME) {
+		if (x > create_new_user_button_.x && x < (create_new_user_button_.x + create_new_user_button_.width) 
+			&& y > create_new_user_button_.y &&  y < (create_new_user_button_.y + create_new_user_button_.height)) {
+			is_creating_new_user_ = true;
+		}
+	} else if (current_state_ == MENU_SCREEN) {
 		//Load the thumbnail that was clicked, if any were clicked
 		for (auto pair : thumbnail_button_links) {
 			auto image = pair.first;
@@ -329,7 +344,7 @@ void ofApp::mousePressed(int x, int y, int button) {
 		TogglePause();
 	} else if (current_state_ == USING_PLAYBACK_CONTROLS) {
 			if (y >= ofGetHeight() - playback_scrubber_->getHeight()) { //if we are operating on the playback slider
-				playback_scrubber_->onSliderEvent(this, &ofApp::onSliderEvent);
+				//do nothing
 			} else if ((y > 1.1 * ICON_SIZE && y < ofGetHeight() - (1.1 * ICON_SIZE) - (playback_scrubber_->getHeight()))) { //on smaller video
 				TogglePause();
 			} else { //will look to see if the click intersects one of the buttons
@@ -380,11 +395,6 @@ void ofApp::mousePressed(int x, int y, int button) {
 	}
 }
 
-//Behavior that occurs when the slider is clicked at a certain point
-void ofApp::onSliderEvent(ofxDatGuiSliderEvent e) {
-	video_.setPosition(e.value);
-}
-
 //Manipulates the last mouse usage time so that the playback controls are hidden
 void ofApp::mouseExited(int x, int y) {
 	last_mouse_usage_ = ofGetElapsedTimeMillis() - 2500; //once the mouse leaves, trigger the hiding of playback controls
@@ -393,6 +403,45 @@ void ofApp::mouseExited(int x, int y) {
 //Adjusts the playback slider on resize
 void ofApp::windowResized(int w, int h) {
 	playback_scrubber_->setWidth(ofGetWidth(), 0);
+
+	int x = ofGetWidth() / 1.40;
+	int y = (ofGetHeight() / 20) + ((((ofGetWidth() * 2.7) / 10) * (netflix_logo_.getHeight() / netflix_logo_.getWidth())) * 2.5);
+	login_gui_->setPosition(x, y);
+
+
+}
+
+//Behavior that occurs when the slider is clicked at a certain point
+void ofApp::onSliderEvent(ofxDatGuiSliderEvent e) {
+	video_.setPosition(e.value);
+}
+
+//Behavior that occurs when the login box is exited or 'enter' is pressed
+void ofApp::onTextInputEvent(ofxDatGuiTextInputEvent e) {
+	string input = e.text;
+	if (current_state_ == GETTING_USERNAME) {
+		login_input_box_->setText("");
+		if (!is_creating_new_user_) {
+			if (ExistsUser(input)) {
+				current_state_ = GETTING_PASSWORD;
+			} else {
+				show_create_button_ = true;
+			}
+		} else {
+			CreateNewUser(input);
+		}
+	} else if (current_state_ == GETTING_PASSWORD) {
+		if (!is_creating_new_user_) {
+			if (input == password_) {
+				current_state_ = MENU_SCREEN;
+			} else {
+				login_input_box_->setText("Please Try Again...");
+			}
+		} else {
+			password_ = input;
+			current_state_ = MENU_SCREEN;
+		}
+	}
 }
 
 //------------------------------------------------------------------------------------
@@ -460,32 +509,37 @@ void ofApp::CloseVideo(VideoObject &video) {
 		video.setPlaybackPosition(0);
 	}
 	video_.stop();
-	Save(user_);
+	Save();
 }
 
 //Will save all created video objects from thumbnail button links
-bool ofApp::Save(string username) {
-	std::ofstream save_file("../data/" + username + "-data.txt");
-	if (!save_file) {
+bool ofApp::Save() {
+	std::ofstream save_data("../data/" + user_ + "-data.txt");
+	std::ofstream save_password("../data/" + user_ + "-password.txt");
+
+	if (!save_data || !save_password) {
 		return false;
 	}
 
-	std::cout << thumbnail_button_links.size() << std::endl;
 	for (auto pair : thumbnail_button_links) {
 		VideoObject video_object = pair.second;
-		save_file << "! " << video_object.getVideoFilepath() << "\n";
-		save_file << "@ " << video_object.getRating() << " ";
-		save_file << "# " << video_object.isWatched() << " ";
-		save_file << "$ " << video_object.getVideoPlaybackPosition() << " ";
-		save_file << "% " << std::endl;
+		save_data << "! " << video_object.getVideoFilepath() << "\n";
+		save_data << "@ " << video_object.getRating() << " ";
+		save_data << "# " << video_object.isWatched() << " ";
+		save_data << "$ " << video_object.getVideoPlaybackPosition() << " ";
+		save_data << "% " << std::endl;
 	}
+	save_data.close();
+
+	save_password << password_;
+	save_password.close();
 
 	return true;
 }
 
 //Will load all saved video objects to loaded_video_objects
-bool ofApp::Load(string username) {
-	std::ifstream load_file("../data/" + username + "-data.txt");
+bool ofApp::Load() {
+	std::ifstream load_file("../data/" + user_ + "-data.txt");
 	if (!load_file) {
 		return false;
 	}
@@ -534,6 +588,11 @@ bool ofApp::ExistsUser(string user) {
 	password_file >> password_;
 
 	return true;
+}
+
+void ofApp::CreateNewUser(string user) {
+	user_ = user;
+	current_state_ = GETTING_PASSWORD;
 }
 
 
@@ -619,9 +678,10 @@ void ofApp::InitializeImages() {
 
 	//Login Screen
 	login_screen_background_ = ofImage("icons/loginbackground.png");
+	create_new_user_icon_ = ofImage("icons/createnewusericon.png");
 }
 
-//Displays the thumbnails after they have been initialized, also pilfers from loaded videos if there are any
+//Displays the thumbnails after they have been initialized, also pilfers data from loaded videos if there are any
 void ofApp::DisplayThumbnails() {
 	std::string thumbs_folder = "thumbs";
 	ofDirectory dir;
@@ -709,35 +769,29 @@ void ofApp::DisplayNetflixLogo() {
 	netflix_logo_.draw(x, y); //optional netflix logo
 }
 
-//Displays the login input box, specifically for the username portion
+//Displays the login input box - auto focusing
 void ofApp::DisplayUsernameInputBox(int width) {
 	login_gui_->setVisible(true);
 	login_input_box_->setHeight(100); //to change text size, edit ofxSmartFont.h at line 61, current size is 20
 	login_input_box_->setTextUpperCase(false);
 	login_input_box_->setWidth(width, width / 3);
-}
 
-void ofApp::DisplayCreateButton() {
-	//ADD STUFF
-}
-
-
-void ofApp::onTextInputEvent(ofxDatGuiTextInputEvent e) {
-	string input = e.text;
-	if (current_state_ == GETTING_USERNAME) {
-		if (ExistsUser(input)) {
-			login_input_box_->setText("");
-			current_state_ = GETTING_PASSWORD;
-		}
-		else {
-			login_input_box_->setText("Could Not Find User: " + input);
-			show_create_button_ = true;
-		}
-	} else if (current_state_ == GETTING_PASSWORD) {
-		if (input == password_) {
-			current_state_ = MENU_SCREEN;
-		} else {
-			login_input_box_->setText("Please Try Again...");
-		}
+	if (!login_input_box_->getFocused()) {
+		login_input_box_->setFocused(true);
 	}
+}
+
+//Displays a create new user button underneath the login box
+void ofApp::DisplayCreateAccountElements() {
+	int x = login_input_box_->getX();
+	int y = login_input_box_->getY() + login_input_box_->getHeight() * 1.5;
+
+	string error_message = "User Does Not Exist.";
+	login_label_.drawString(error_message, x, y + (create_new_user_icon_.getHeight() + login_label_.getSize())/2);
+
+	x = (login_input_box_->getWidth() + login_input_box_->getX() - create_new_user_icon_.getWidth());
+	create_new_user_icon_.draw(x, y);
+
+	create_new_user_button_ = ofRectangle(x, y, create_new_user_icon_.getWidth(), create_new_user_icon_.getHeight());
+
 }

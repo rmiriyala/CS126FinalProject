@@ -25,7 +25,7 @@ class ofApp : public ofBaseApp{
 	};
 
 	private:
-		//User
+		//User Control
 		string user_;
 		string password_;
 		bool show_create_button_ = false;
@@ -45,11 +45,13 @@ class ofApp : public ofBaseApp{
 		ofxDatGui* login_gui_;
 		ofxDatGuiTextInput* login_input_box_;
 
+		ofTrueTypeFont login_label_;
 		ofTrueTypeFont video_label_;
 		ofTrueTypeFont menu_label_;
 		ofTrueTypeFont rating_instructions_;
 
 		ofImage login_screen_background_;
+		ofImage create_new_user_icon_;
 		ofImage like_icon_;
 		ofImage dislike_icon_;
 		ofImage netflix_logo_;
@@ -61,12 +63,13 @@ class ofApp : public ofBaseApp{
 		ofImage rewind_icon_;
 		ofImage back_icon_;
 
+		ofRectangle create_new_user_button_;
+		ofRectangle like_button_;
+		ofRectangle dislike_button_;
 		ofRectangle play_pause_button_;
 		ofRectangle forward_button_;
 		ofRectangle rewind_button_;
 		ofRectangle back_button_;
-		ofRectangle like_button_;
-		ofRectangle dislike_button_;
 
 		vector<ofRectangle> playback_buttons_;
 		vector<ofRectangle> rating_buttons_;
@@ -115,11 +118,10 @@ class ofApp : public ofBaseApp{
 		//Object Control
 		void LoadVideo(VideoObject &video);
 		void CloseVideo(VideoObject &video);
-
-		bool Save(string username);
-		bool Load(string username);
-
+		bool Save();
+		bool Load();
 		bool ExistsUser(string user);
+		void CreateNewUser(string user);
 
 		//Display Helpers
 		void InitializeThumbnails();
@@ -127,7 +129,7 @@ class ofApp : public ofBaseApp{
 		void DisplayThumbnails();
 		void DisplayNetflixLogo();
 		void DisplayUsernameInputBox(int width);
-		void DisplayCreateButton();
+		void DisplayCreateAccountElements();
 
 		void onTextInputEvent(ofxDatGuiTextInputEvent e);
 
