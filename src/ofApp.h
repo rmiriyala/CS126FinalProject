@@ -25,35 +25,44 @@ class ofApp : public ofBaseApp{
 	};
 
 	private:
-		//User Control
+		//USER ELEMENTS
 		string user_;
 		string password_;
 		bool show_create_button_ = false;
 		bool is_creating_new_user_ = false;
 
-		//State Control
-		AppState current_state_ = GETTING_USERNAME;
+		//STATE CONTROL ELEMENTS
+		AppState current_state_ = GETTING_USERNAME; //intialized to username screen
 
-		//Objects
+		//VIDEO CONTROL ELEMENTS
+		//objects
 		vector<pair<ofRectangle, VideoObject>> thumbnail_button_links;
 		vector<VideoObject> loaded_video_objects_;
 		ofVideoPlayer video_;
+		
+		//boolean flags and tracking variables
+		int current_video_object_;
+		std::size_t last_mouse_usage_;
+		bool is_paused_;
 
-		//Recommendation System
+		//RECOMMENDATION SYSTEM ELEMENTS
 		map<string, vector<double>> aggregate_user_data_;
 		string recommended_video_filepath_ = "nothing";
 		
-		//GUI Elements
+		//GUI ELEMENTS
+		//ofxDatGui
 		ofxDatGui* slider_gui_;
 		ofxDatGuiSlider* playback_scrubber_;
 		ofxDatGui* login_gui_;
 		ofxDatGuiTextInput* login_input_box_;
-
+		
+		//labels
 		ofTrueTypeFont login_label_;
 		ofTrueTypeFont video_label_;
 		ofTrueTypeFont menu_label_;
 		ofTrueTypeFont rating_instructions_;
 
+		//images
 		ofImage login_screen_background_;
 		ofImage create_new_user_icon_;
 		ofImage like_icon_;
@@ -67,6 +76,7 @@ class ofApp : public ofBaseApp{
 		ofImage rewind_icon_;
 		ofImage back_icon_;
 
+		//image 'buttons'
 		ofRectangle create_new_user_button_;
 		ofRectangle like_button_;
 		ofRectangle dislike_button_;
@@ -75,19 +85,22 @@ class ofApp : public ofBaseApp{
 		ofRectangle rewind_button_;
 		ofRectangle back_button_;
 
+		//button containers
 		vector<ofRectangle> playback_buttons_;
 		vector<ofRectangle> rating_buttons_;
 
-		//Tracking Variables
-		int current_video_object_;
-		std::size_t last_mouse_usage_;
-		bool is_paused_;
-
 	public:
+		//PROGRAM-DRIVING FUNCTIONS
 		void setup();
 		void update();
 		void draw();
 
+		//INITIALIZATION FUNCTIONS
+		void GenerateThumbnails();
+		void InitializeImages();
+		void InitializeLabels();
+
+		//GUI UPDATE FUNCTIONS
 		void drawUsernameScreen();
 		void drawPasswordScreen();
 		void drawMenuScreen();
@@ -97,58 +110,45 @@ class ofApp : public ofBaseApp{
 		void hidePlaybackControls();
 		void drawClosingScreen();
 		void drawRatingBox();
-
-		void keyPressed(int key);
-		void mouseMoved(int x, int y );
-		void mousePressed(int x, int y, int button);
-		void onSliderEvent(ofxDatGuiSliderEvent e);
-		void mouseExited(int x, int y);
-		void windowResized(int w, int h);
-
-		/*Unused OpenFrameworks Commands*/
-		//void keyReleased(int key);
-		//void mouseDragged(int x, int y, int button);
-		//void mouseReleased(int x, int y, int button);
-		//void mouseEntered(int x, int y);
-		//void dragEvent(ofDragInfo dragInfo);
-		//void gotMessage(ofMessage msg);
-		
-
-		//Playback Controls
-		void TogglePause();
-		void Forward();
-		void Rewind();
-
-		//Object Control
-		void LoadVideo(VideoObject &video);
-		void CloseVideo(VideoObject &video);
-		bool Save();
-		bool Load();
-		vector<VideoObject> Load(string user);
-		bool ExistsUser(string user);
-		void CreateNewUser(string user);
-
-		//Recommendation system
-		string GenerateRecommendation();
-		void BuildAggregateUserComparisonDatabase();
-		double CalculateAlikenessToUser(string other_user);
-		string GetUserFromPath(string path);
-
-		template <typename ElementType>
-		ElementType Sum(vector<ElementType> vector);
-
-		//Display Helpers
-		void InitializeThumbnails();
-		void InitializeImages();
 		void DisplayThumbnails();
 		void DisplayRecommendationBox();
 		void DisplayNetflixLogo();
 		void DisplayUsernameInputBox(int width);
 		void DisplayCreateAccountElements();
 
+		//ON EVENT FUNCTIONS
+		void keyPressed(int key);
+		void mouseMoved(int x, int y );
+		void mousePressed(int x, int y, int button);
+		void mouseExited(int x, int y);
+		void windowResized(int w, int h);
 		void onTextInputEvent(ofxDatGuiTextInputEvent e);
+		void onSliderEvent(ofxDatGuiSliderEvent e);
+		
+		//VIDEO PLAYBACK ADJUSTMENTS
+		void TogglePause();
+		void Forward();
+		void Rewind();
+		void LoadVideo(VideoObject &video);
+		void CloseVideo(VideoObject &video);
 
-		//Constants
+		//FILE SAVING/LOADING
+		bool Save();
+		bool Load();
+		vector<VideoObject> Load(string user);
+		bool ExistsUser(string user);
+		void CreateNewUser(string user);
+
+		//RECOMMENDATION SYSTEM
+		string GenerateRecommendation();
+		void BuildAggregateUserComparisonDatabase();
+		double CalculateAlikenessToUser(string other_user);
+		string GetUserFromPath(string path);
+		template <typename ElementType>
+		ElementType Sum(vector<ElementType> vector);
+
+		//FIXED VALUE CONSTANTS
 		const int ICON_SIZE = 100;
 		const float DISPLAY_RATIO = 2;
+		const string FONT = OF_TTF_SANS;
 };

@@ -5,11 +5,11 @@
 ! movies/Sifu_Tassos.mp4
 @ 1 # 1 $ 0 % 
 ! movies/The_Last_Jedi.mp4
-@ 1 # 1 $ 0 % 
+@ 0 # 1 $ 0 % 
 ! movies/The_Office-Fire_Drill.mp4
-@ -1 # 0 $ 0.008106 % 
+@ -1 # 0 $ 0 % 
 ! movies/The_Office-First_Aid.mp4
-@ 1 # 1 $ 0 % 
+@ -1 # 0 $ 0 % 
 ! movies/Vince_Wilfork_Highlights.mp4
 @ -1 # 0 $ 0 % 
 ! movies/Wing_Chun_vs_MMA.mp4
