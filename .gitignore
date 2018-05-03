@@ -1,13 +1,11 @@
 
-.vs/
+.vs/*
+.vs
 *.opendb
-*.tlog
 *.tlog
 *.pdb
 *.mov
 *.mp4
 *.ipch
-*.ipch
 *-password.txt
-*.tlog
-*.tlog
+*.dll
