@@ -57,3 +57,53 @@ The playback controls will now disappear along with the mouse after a 2.5 second
 #### (4/29) Fixed Bugs Related to Thumbnail Creation, Added Proper Labels
 
 Using [ofTrueTypeFont](http://halfdanj.github.io/ofDocGenerator/ofTrueTypeFont.html), I changed the bitmap string drawings for labels into correctly sized labels (including one in the playback control interface) so the user is now able to read the labels without strain.  In addition, added an optional Netflix logo that can be removed by commenting and uncommenting two statements of code.
+
+#### (4/30) Changed Playback Controls Interface
+
+Since the video was stretched to fill the entire gap between the playback control bars, it left the user uncomfortable when watching, having to adjust to different video ratios; to compensate, I maintained the same ratio amongst the height and width and centered the video, so black bars will now appear to either side when playing.  All videos continue to play in the 16:9 ratio.
+
+#### (4/30) Window Resizing for the Playback Screen; Reformatted Code
+
+Changed the way things were being drawn so that on window resizing (such as going full screen) the video player would compensate and not look smushed or with some parts out of phase and misaligned.  In addition, reformatted the code to provide a better separation of the GUI features and the update features.
+
+#### (4/30) Implemented a Like/Dislike System
+
+After each video is finished, the user will now be forced to select a rating for the video, being either like or dislike, and the program will save this to the VideoObject's data.  The program will not force users to continually re-rate the program if they are rewatching a particular video.  The like/dislike system was implemented in a very similar way to the playback control and required the creation of a few more states in the enum of possible states.
+
+#### (4/30) Added Label to the Rating Screen
+
+Added a label to the rating screen using [ofTrueTypeFont](http://openframeworks.cc/documentation/graphics/ofTrueTypeFont/), which allowed me to resize the text and center it exactly.  Applied these principles to all labels being used and resized them appropriately so they were easier to see.
+
+#### (5/1) Restructured Code and Added Comments
+
+Had to restructure the code and add comments since this file was now getting very large. In addition, began laying the groundworks for the load and delete system.
+
+#### (5/1) Implemented Load/Save Mechanism
+
+A few issues arose when creating this system.  After multiple failed attempts to use ofFile, which wouldn't let me write to the directory I wanted (or any directory for that matter), I switched to the standard if/ofstream, which worked fine.  When saving, I discovered that thumbnail_button_links kept adding elements each time draw was called, so I built a quasi '.contains()' method that checked if a video object already existed in the vector before adding it again (since draw is called about 60 times a second, this became a real issue when 700+ objects were being saved to a file).
+
+In addition, the filepath refused to be saved correctly when using the >> operator, so I used a getLine() call instead and had to crop the beginning parse space by calling string::substr
+
+#### (5/1) Added Login Functionality
+
+Login screen GUI added, but had to dig through and edit the core of ofxdatGui in order to create a setHeight() function, since the original height being used was a wrapper around size 12 font.  In addition had to dig through ofxSmartFont to change the font height constant.
+
+Added new state progression so the user must login or create a username before accessing the app; when the user wants to create a new username, they must fail first, a button will appear, and they can click that and follow instructions to be added to the database.  The user's data file is saved after every time they watch a video and their password is saved every time the data is saved.
+
+#### (5/2) Fixed Login/Creation Bugs:
+
+When the input field was blank, the computer was processing too fast and using those blank fields as the username and password.  Also for error messages displayed in the text input, like "try again..." it would save that.  Now, I built in a defense by checking basic username and password characteristics such as they must have positive length, be distinct from each other and contain no spaces.
+
+#### (5/2) Fixed Bug for Playback Slider:
+
+Not working for mouse-click directly on the slider; after looking into the ofxDatGui class, realized that because I set the focus (in a different gui, though for some reason it still affected this one) on the login_box, it would not work; unset the focus from login_box after use was over and now works most of the time.
+
+#### (5/2) Created Recommendation System:
+
+Built a recommendation system that takes the other users and generates a fraction of how well they represent you.  Then, the program builds an aggregate data list for each video, with a vector for all other user's preferences.  By combining these ratings as well as how well the current user matches other users' preferences, the computer generates probabilities (not in the standard 0-1 scale) on what the user will like and returns the string of the filepath to the video with the greatest probability.  Difficulties in creation led to object structure, but using a vector and map allowed me to do this most easily, after experimenting with multimaps and vectors of pairs.
+
+The recommendation system is very inaccurate with only one other user, but quickly gains accuracy when more users are added and those users' preferences vary.
+
+#### (5/2) Updates to Style and Comments
+
+Updated style elements; decided to leave all openFrameworks functions as is in terms of naming since that is the standard for openFrameworks.  All general non-openFrameworks functions I have created however, have been named with the appropriate conventions.  In addition, updated comments for each function with more descriptive and accurate insights into the code.
