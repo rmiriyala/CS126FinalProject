@@ -10,6 +10,7 @@ My final project for CS 126 is a low-level version of Netflix that plays videos 
 - Navigate to of_v0.9.8_vs_release/examples and run one of the examples to check if the installation is correct; if not, revise both the Visual Studio installation and the OpenFrameworks installation.
 - Install [ofxDatGui](https://github.com/braitsch/ofxDatGui) by following the instructions [here](http://braitsch.github.io/ofxDatGui/index.html#installation).
 - Clone this repository and open it using projectGenerator.exe in the of_v0.9.8_vs_release folder you downloaded.  Be sure to add ofxGui and ofxDatGui as addons.
+- Download the current 'Netflix' movies [here](https://drive.google.com/open?id=1KeIeFzZtkCg_7EnCCMs0Sz6a8fmJZrvl) and place them in a folder called 'movies' in your projects bin/data/ folder
 
 ## Running
 
