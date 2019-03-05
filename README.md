@@ -1,4 +1,4 @@
-# CS 126 FinalProject
+# Movie Time
 
 ## Overview
 
